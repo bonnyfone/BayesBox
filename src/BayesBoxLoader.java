@@ -69,7 +69,7 @@ public class BayesBoxLoader {
 	public static void main(String argv[]) {
 		try {
 
-			BayesBoxLoader bb = new BayesBoxLoader("/home/ziby/Scrivania/esempio.xml");
+			BayesBoxLoader bb = new BayesBoxLoader("/home/ziby/Scrivania/ee4.xml");
 			BayesNet net = bb.getBayesNet();
 
 			//Tmp creation
@@ -184,12 +184,13 @@ public class BayesBoxLoader {
 	private static boolean[] getBooleanConfiguration(int base, int pos){
 		int size = base;//(int) Math.pow(2, base);
 		
-		Util.log2(base);
+		int dim = (int) Util.log2(base);
 		
 		System.out.println(size);
-		boolean ris[] = new boolean[(int) Util.log2(base)];
+		boolean ris[] = new boolean[dim];
 		int targetBin = size-1-pos;
 		String conf = Integer.toBinaryString(targetBin);
+		while(conf.length()<dim)conf = "0"+conf;
 		System.out.println("Binario: "+conf);
 		for(int i=0;i<ris.length;i++){
 			if(conf.charAt(i) == '0')
