@@ -218,26 +218,28 @@ public class BayesBoxLoader {
 		System.out.println(net.getVariables().toString());
 //		
 		
-//		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
-//		evidence.put("id2", true);
-//		evidence.put("id1", true);
-//		
-//		double[] ris =net.likelihoodWeighting("id3", evidence, 100);
-//		System.out.println(ris[0]+" , " + ris[1] );
+		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
+		//evidence.put("id0", true);
+		//evidence.put("id1", true);
+		
+		//evidence.put("node_2", true);
+		
+		double[] ris =net.likelihoodWeighting("id2", evidence, 100);
+		System.out.println(ris[0]+" , " + ris[1] );
 
-		boolean i = true;
-		int c =0;
-		while(i){
-			
-			Hashtable a = net.getPriorSample();
-			if(a.get("id0")==Boolean.FALSE && a.get("id1")==Boolean.TRUE){
-				i=false;
-				System.out.println("Campione generato: "+net.getComprensiveResult(a).toString());
-				System.out.println("Giri: "+c);
-			}
-			
-			c++;
-		}
+//		boolean i = true;
+//		int c =0;
+//		while(i){
+//			
+//			Hashtable a = net.getPriorSample();
+//			if(a.get("id0")==Boolean.FALSE && a.get("id1")==Boolean.TRUE){
+//				i=false;
+//				System.out.println("Campione generato: "+net.getComprensiveResult(a).toString());
+//				System.out.println("Giri: "+c);
+//			}
+//			
+//			c++;
+//		}
 		
 		//System.out.println("Campione generato: "+net.getComprensiveResult(net.getPriorSample()).toString());
 		

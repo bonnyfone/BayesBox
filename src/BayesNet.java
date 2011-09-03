@@ -171,17 +171,19 @@ public class BayesNet {
 		return Util.normalize(retval);
 	}
 
-	public double[] likelihoodWeighting(String X,
-			Hashtable<String, Boolean> evidence, int numberOfSamples,
-			Random r) {
+	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples,	Random r) {
 		double[] retval = new double[2];
+		List<BayesNetNode> variableNodes = getVariableNodes();
 		for (int i = 0; i < numberOfSamples; i++) {
 			Hashtable<String, Boolean> x = new Hashtable<String, Boolean>();
 			double w = 1.0;
-			List<BayesNetNode> variableNodes = getVariableNodes();
+			
+			
 			for (BayesNetNode node : variableNodes) {
 				if (evidence.get(node.getVariable()) != null) {
+
 					w *= node.probabilityOf(x);
+					System.out.println("Evidentza trovata " +w);
 					x.put(node.getVariable(), evidence.get(node.getVariable()));
 				} else {
 					x.put(node.getVariable(), node.isTrueFor(r.nextDouble(), x));
@@ -195,6 +197,7 @@ public class BayesNet {
 			}
 
 		}
+		//return retval;
 		return Util.normalize(retval);
 	}
 	/*
@@ -231,10 +234,8 @@ public class BayesNet {
 		return mcmcAsk(X, evidence, numberOfVariables, new Random());
 	}
 */
-	public double[] likelihoodWeighting(String X,
-			Hashtable<String, Boolean> evidence, int numberOfSamples) {
-		return likelihoodWeighting(X, evidence, numberOfSamples,
-				new Random());
+	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples) {
+		return likelihoodWeighting(X, evidence, numberOfSamples, new Random());
 	}
 
 	public double[] rejectionSample(String X,
