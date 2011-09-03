@@ -1,6 +1,9 @@
+import java.awt.List;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -61,153 +64,184 @@ public class BayesBoxLoader {
 
 	
 	public BayesNet getBayesNet(){
-		return null;
+
+		//Tmp creation
+		ArrayList<BayesNetNode> tmpNodes = new ArrayList<BayesNetNode>();
+		
+		Document XMLstruct = getXMLDoc();
+		
+		//Leggo i nodi
+		NodeList nodeLst = XMLstruct.getElementsByTagName("VAR");
+		for (int s = 0; s < nodeLst.getLength(); s++) {
+			Node fstNode = nodeLst.item(s);
+			
+			if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
+				BayesNetNode tmpNode = new BayesNetNode(fstNode.getAttributes().getNamedItem("NAME").getTextContent()+"");
+
+				NodeList child = fstNode.getChildNodes();
+				
+				for(int i=0;i< child.getLength();i++){
+					String val = child.item(i).getNodeName();
+					if(val.equals("DESCRIPTION")){
+						tmpNode.setDescription(child.item(i).getTextContent());
+					}
+					else if(val.equals("STATENAME")){
+						tmpNode.setStateNames(child.item(i).getTextContent(),child.item(i+2).getTextContent());
+						break;
+					}
+				}
+				
+				//DEBUG
+				System.out.println("NODE name: " + tmpNode.getVariable()       + "\n" +
+								   "     desc: " + tmpNode.getDescription()    + "\n" +
+								   "     val1: " + tmpNode.getStateNames()[0]  + "\n" +
+								   "     val2: " + tmpNode.getStateNames()[1]  + "\n" );
+				tmpNodes.add(tmpNode);
+			}
+		}
+		
+		
+		//Estraggo dipendenze
+		nodeLst = XMLstruct.getElementsByTagName("DIST");
+		
+		//Var di comodo per evitare allocazioni ripetute
+		BayesNetNode currentNode;
+		ArrayList<BayesNetNode> dependingNodes;
+		
+		for (int s = 0; s < nodeLst.getLength(); s++) {
+			Node fstNode = nodeLst.item(s);
+			
+			if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
+				
+				NodeList child = fstNode.getChildNodes();
+				
+				currentNode=null;
+				dependingNodes = new ArrayList<BayesNetNode>();
+				ArrayList<String> smartValue = null;
+				
+				for(int i=0;i< child.getLength();i++){
+					String val = child.item(i).getNodeName();
+					if(val.equals("PRIVATE")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
+						currentNode = getBayesNetNodeById(tmpNodes, child.item(i).getAttributes().getNamedItem("NAME").getTextContent()+"");
+						System.out.println("Node find: "+child.item(i).getAttributes().getNamedItem("NAME").getTextContent()+" alias " +currentNode.getDescription());
+					}
+					else if(val.equals("CONDSET")){
+						NodeList subchild = child.item(i).getChildNodes();
+						for(int j=0;j< subchild.getLength();j++){
+							String subval = subchild.item(j).getNodeName();
+							
+							if(subval.equals("CONDELEM")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
+								dependingNodes.add(getBayesNetNodeById(tmpNodes, subchild.item(j).getAttributes().getNamedItem("NAME").getTextContent()+""));
+								System.out.println("DependingNode find: "+subchild.item(j).getAttributes().getNamedItem("NAME").getTextContent()+" alias "+dependingNodes.get(dependingNodes.size()-1).getDescription());
+							}
+						}
+					}
+					else if(val.equals("DPIS")){
+						NodeList subchild = child.item(i).getChildNodes();
+						String tmpVal="";
+						smartValue = new ArrayList<String>();
+						for(int j=0;j< subchild.getLength();j++){
+							String subval = subchild.item(j).getNodeName();
+							
+							
+							if(subval.equals("DPI")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
+								tmpVal = (subchild.item(j).getTextContent()+"").trim();
+								
+								tmpVal = (tmpVal.subSequence(0,tmpVal.indexOf(" "))).toString().trim();
+								smartValue.add(tmpVal);
+								//System.out.println("Value found: "+tmpVal);
+								
+							}
+						}
+					}
+				}
+				//if(dependingNodes.size()==0)dependingNodes.add(currentNode);
+				currentNode.influencedBy(dependingNodes);
+				inflateDistribution(currentNode,smartValue);
+
+				System.out.println("Distribution:\n"+currentNode.getDistribution().toString());
+			}
+			
+		}  
+		
+		ArrayList<BayesNetNode> roots = new ArrayList<BayesNetNode>();
+		
+		for(int i=0;i<tmpNodes.size();i++)
+			if(tmpNodes.get(i).isRoot())roots.add(tmpNodes.get(i));
+		
+		
+		return new BayesNet(roots);
+		//BayesNet result = new BayesNe
 		
 	}
 	
-	///DEBUG///
-	public static void main(String argv[]) {
-		try {
-
-			BayesBoxLoader bb = new BayesBoxLoader("/home/ziby/Scrivania/ee4.xml");
-			BayesNet net = bb.getBayesNet();
-
-			//Tmp creation
-			ArrayList<BayesNetNode> tmpNodes = new ArrayList<BayesNetNode>();
-			
-			Document XMLstruct = bb.getXMLDoc();
-			
-			//Leggo i nodi
-			NodeList nodeLst = XMLstruct.getElementsByTagName("VAR");
-			for (int s = 0; s < nodeLst.getLength(); s++) {
-				Node fstNode = nodeLst.item(s);
-				
-				if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
-					BayesNetNode tmpNode = new BayesNetNode(fstNode.getAttributes().getNamedItem("NAME").getTextContent()+"");
-
-					NodeList child = fstNode.getChildNodes();
-					
-					for(int i=0;i< child.getLength();i++){
-						String val = child.item(i).getNodeName();
-						if(val.equals("DESCRIPTION")){
-							tmpNode.setDescription(child.item(i).getTextContent());
-						}
-						else if(val.equals("STATENAME")){
-							tmpNode.setStateNames(child.item(i).getTextContent(),child.item(i+2).getTextContent());
-							break;
-						}
-					}
-					
-					//DEBUG
-					System.out.println("NODE name: " + tmpNode.getVariable()       + "\n" +
-									   "     desc: " + tmpNode.getDescription()    + "\n" +
-									   "     val1: " + tmpNode.getStateNames()[0]  + "\n" +
-									   "     val2: " + tmpNode.getStateNames()[1]  + "\n" );
-					tmpNodes.add(tmpNode);
-				}
-			}
-			
-			
-			//Estraggo dipendenze
-			nodeLst = XMLstruct.getElementsByTagName("DIST");
-			
-			//Var di comodo per evitare allocazioni ripetute
-			BayesNetNode currentNode;
-			ArrayList<BayesNetNode> dependingNodes;
-			
-			for (int s = 0; s < nodeLst.getLength(); s++) {
-				Node fstNode = nodeLst.item(s);
-				
-				if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
-					
-					NodeList child = fstNode.getChildNodes();
-					
-					currentNode=null;
-					dependingNodes = new ArrayList<BayesNetNode>();
-					ArrayList<String> smartValue = null;
-					
-					for(int i=0;i< child.getLength();i++){
-						String val = child.item(i).getNodeName();
-						if(val.equals("PRIVATE")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
-							currentNode = getBayesNetNodeById(tmpNodes, child.item(i).getAttributes().getNamedItem("NAME").getTextContent()+"");
-							System.out.println("Node find: "+child.item(i).getAttributes().getNamedItem("NAME").getTextContent()+" alias " +currentNode.getDescription());
-						}
-						else if(val.equals("CONDSET")){
-							NodeList subchild = child.item(i).getChildNodes();
-							for(int j=0;j< subchild.getLength();j++){
-								String subval = subchild.item(j).getNodeName();
-								
-								if(subval.equals("CONDELEM")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
-									dependingNodes.add(getBayesNetNodeById(tmpNodes, subchild.item(j).getAttributes().getNamedItem("NAME").getTextContent()+""));
-									System.out.println("DependingNode find: "+subchild.item(j).getAttributes().getNamedItem("NAME").getTextContent()+" alias "+dependingNodes.get(dependingNodes.size()-1).getDescription());
-								}
-							}
-						}
-						else if(val.equals("DPIS")){
-							NodeList subchild = child.item(i).getChildNodes();
-							String tmpVal="";
-							smartValue = new ArrayList<String>();
-							for(int j=0;j< subchild.getLength();j++){
-								String subval = subchild.item(j).getNodeName();
-								
-								
-								if(subval.equals("DPI")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
-									tmpVal = (subchild.item(j).getTextContent()+"").trim();
-									
-									tmpVal = (tmpVal.subSequence(0,tmpVal.indexOf(" "))).toString().trim();
-									smartValue.add(tmpVal);
-									System.out.println("Value found: "+tmpVal);
-									
-								}
-							}
-						}
-					}
-					currentNode.influencedBy(dependingNodes);
-					inflateDistribution(currentNode,smartValue);
-
-					System.out.println("Distribution:\n"+currentNode.getDistribution().toString());
-				}
-				
-			}  
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private static void inflateDistribution(BayesNetNode node, ArrayList<String> values){
+	private void inflateDistribution(BayesNetNode node, ArrayList<String> values){
 		for(int i=0;i<values.size();i++){
 			node.setProbability(Double.parseDouble(values.get(i)), getBooleanConfiguration(values.size(),i));
 		}
 	}
 	
-	private static boolean[] getBooleanConfiguration(int base, int pos){
+	private boolean[] getBooleanConfiguration(int base, int pos){
 		int size = base;//(int) Math.pow(2, base);
-		
 		int dim = (int) Util.log2(base);
-		
-		System.out.println(size);
 		boolean ris[] = new boolean[dim];
 		int targetBin = size-1-pos;
 		String conf = Integer.toBinaryString(targetBin);
 		while(conf.length()<dim)conf = "0"+conf;
-		System.out.println("Binario: "+conf);
+		//System.out.println("Binario: "+conf);
 		for(int i=0;i<ris.length;i++){
 			if(conf.charAt(i) == '0')
 				ris[i] = false;
 			else 
 				ris[i] = true;
 		}
-		
 		return ris;
 	}
 	
-	private static BayesNetNode getBayesNetNodeById(ArrayList<BayesNetNode> list,String id){
+	private BayesNetNode getBayesNetNodeById(ArrayList<BayesNetNode> list,String id){
 		
 		for(int i=0;i<list.size();i++){
 			if(list.get(i).getVariable().equals(id))return list.get(i);
 		}
 		return null;
 		
+	} 
+	
+	
+	///DEBUG///
+	public static void main(String argv[]) {
+		BayesBoxLoader bay = new BayesBoxLoader("/home/ziby/Scrivania/test bayes/ee3.xml");
+		BayesNet net = bay.getBayesNet();
+		
+		//net.getPriorSample();
+	
+		System.out.println(net.getVariables().toString());
+//		
+		
+//		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
+//		evidence.put("id2", true);
+//		evidence.put("id1", true);
+//		
+//		double[] ris =net.likelihoodWeighting("id3", evidence, 100);
+//		System.out.println(ris[0]+" , " + ris[1] );
+
+		boolean i = true;
+		int c =0;
+		while(i){
+			
+			Hashtable a = net.getPriorSample();
+			if(a.get("id0")==Boolean.FALSE && a.get("id1")==Boolean.TRUE){
+				i=false;
+				System.out.println("Campione generato: "+net.getComprensiveResult(a).toString());
+				System.out.println("Giri: "+c);
+			}
+			
+			c++;
+		}
+		
+		//System.out.println("Campione generato: "+net.getComprensiveResult(net.getPriorSample()).toString());
+		
+		
+		//net.rejectionSample(X, evidence, numberOfSamples)
 	}
 }

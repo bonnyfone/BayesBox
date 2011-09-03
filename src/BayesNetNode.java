@@ -124,20 +124,20 @@ public class BayesNetNode {
                 return distribution.probabilityOf(conditions);
         }
 
-        public Boolean isTrueFor(double probability,
-                        Map<String, Boolean> modelBuiltUpSoFar) {
+        public Boolean isTrueFor(double probability, Map<String, Boolean> modelBuiltUpSoFar) {
                 HashMap<String, Boolean> conditions = new HashMap<String, Boolean>();
                 if (isRoot()) {
-                        conditions.put(getVariable(), Boolean.TRUE);
+                		System.out.println(getVariable() + " is root!");
+                        //conditions.put(getVariable(), Boolean.TRUE);
                 } else {
             
                 	for (int i = 0; i < parents.size(); i++) {
                                 BayesNetNode parent = parents.get(i);
-                                conditions.put(parent.getVariable(), modelBuiltUpSoFar
-                                                .get(parent.getVariable()));
+                                conditions.put(parent.getVariable(), modelBuiltUpSoFar.get(parent.getVariable()));
                         }
                 }
                 double trueProbability = probabilityOf(conditions);
+                System.out.println("Probability: "+probability + " - TrueProb: "+trueProbability);
                 if (probability <= trueProbability) {
                         return Boolean.TRUE;
                 } else {
@@ -184,7 +184,7 @@ public class BayesNetNode {
                 }
         }
 
-        private boolean isRoot() {
+        public boolean isRoot() {
                 return (parents.size() == 0);
         }
 

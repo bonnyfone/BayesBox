@@ -31,7 +31,6 @@ public class BayesNet {
 		child1.setProbability(false, true,   0.5);
 		child1.setProbability(false, false,  0.5);
 		
-		
 		//Map <String, Boolean> m =new HashMap<String, Boolean>();
 		//m.put(root1.getVariable(), false);
 		//m.put(root1.getVariable(), false);
@@ -48,9 +47,13 @@ public class BayesNet {
 		
 		//BayesNet net = new BayesNet(root1,root2);
 		BayesNet net = new BayesNet(root1,root2);
+		
+		net.getPriorSample();
 
 		System.out.println("CHILD\n"+child1.getDistribution().toString());
 		System.out.println(root1.getDistribution().toString());
+		System.out.println(root2.getDistribution().toString());
+		
 		System.out.println("BayesNet probability of TRUE: "+net.probabilityOf("child1", new Boolean(false), ht));
 		
 		//System.out.println("Prob of: "+child1.probabilityOf(m));
@@ -80,7 +83,8 @@ public class BayesNet {
 	public BayesNet(List<BayesNetNode> rootNodes) {
 		roots = rootNodes;
 	}
-
+	
+	
 	public List<String> getVariables() {
 		variableNodes = getVariableNodes();
 		List<String> variables = new ArrayList<String>();
@@ -121,12 +125,27 @@ public class BayesNet {
 
 		}
 	}
+	
+	public Hashtable getComprensiveResult(Hashtable source){
+		
+		Hashtable<String, Boolean> ris=new Hashtable<String, Boolean>();
+		for(BayesNetNode n : variableNodes){
+			ris.put(n.getDescription() +"(" +n.getVariable()+")", (Boolean) source.get(n.getVariable()));
+			
+		}
+		return ris;
+	}
 
 	public Hashtable getPriorSample(Random r) {
 		Hashtable<String, Boolean> h = new Hashtable<String, Boolean>();
 		List<BayesNetNode> variableNodes = getVariableNodes();
+		//System.out.println("LISTA: "+variableNodes);
+		int i=0;
+		//System.out.println("Iterazione "+i+": "+h.toString());
 		for (BayesNetNode node : variableNodes) {
+			i++;
 			h.put(node.getVariable(), node.isTrueFor(r.nextDouble(), h));
+			//System.out.println("Iterazione "+i+": "+h.toString());
 		}
 		return h;
 	}
@@ -165,9 +184,7 @@ public class BayesNet {
 					w *= node.probabilityOf(x);
 					x.put(node.getVariable(), evidence.get(node.getVariable()));
 				} else {
-					x
-							.put(node.getVariable(), node.isTrueFor(r
-									.nextDouble(), x));
+					x.put(node.getVariable(), node.isTrueFor(r.nextDouble(), x));
 				}
 			}
 			boolean queryValue = (x.get(X)).booleanValue();
@@ -226,11 +243,60 @@ public class BayesNet {
 				new Random());
 	}
 
-	//
-	// PRIVATE METHODS
-	//
+	/**
+	 * Ottiene una lista delle variabili della rete di bayes in un ordine tale da rispettare le dipendenze interne alla rete.
+	 */
+	private List<BayesNetNode> getVariableNodes(){
+		System.out.println("Calcolo LISTA con ordine consistente...");
+		List<BayesNetNode> parents = roots;
+		List<BayesNetNode> newVariableNodes = new ArrayList<BayesNetNode>();
+		List<BayesNetNode> rem = new ArrayList<BayesNetNode>();
+		//PASSO 1
+		//tutti i parents iniziali, sicuramente posso metterli
+		newVariableNodes.addAll(parents);
+		
+		for(BayesNetNode iterParents : parents){
+			//if(!newVariableNodes.contains(iterParents))newVariableNodes.add(iterParents);
+			
+			List<BayesNetNode> children = iterParents.getChildren();
+			for (BayesNetNode child : children) {
+				if(newVariableNodes.containsAll(child.getParents()))newVariableNodes.add(child);
+				else rem.add(child);
+				
+				List<BayesNetNode> subchild = child.getChildren();
+				for(BayesNetNode s : subchild){
+					if(!rem.contains(s))rem.add(s);
+				}
+			}
+		}
+		
+		//PASSO 2
+		while(rem.size()>0){
+			System.out.println("RIMANGONO: "+rem);
+			parents=rem;
+			rem = new ArrayList<BayesNetNode>();
+			for(BayesNetNode iterParents : parents){
+				if(!newVariableNodes.contains(iterParents) && newVariableNodes.containsAll(iterParents.getParents()))newVariableNodes.add(iterParents);
+				
+				List<BayesNetNode> children = iterParents.getChildren();
+				for (BayesNetNode child : children) {
+					if(newVariableNodes.containsAll(child.getParents()))newVariableNodes.add(child);
+					else rem.add(child);
+					
+					List<BayesNetNode> subchild = child.getChildren();
+					for(BayesNetNode s : subchild){
+						if(!rem.contains(s))rem.add(s);
+					}
+				}
+			}
+		}
+		System.out.println("FATTO!");
+		return newVariableNodes;
+	}
+	
 
-	private List<BayesNetNode> getVariableNodes() {
+	/** DEPRECATO non rispetta una visita consistente */
+	private List<BayesNetNode> getVariableNodes2() {
 		// TODO dicey initalisation works fine but unclear . clarify
 		if (variableNodes == null) {
 			List<BayesNetNode> newVariableNodes = new ArrayList<BayesNetNode>();
