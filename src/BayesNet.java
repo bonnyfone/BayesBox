@@ -154,8 +154,7 @@ public class BayesNet {
 		return getPriorSample(new Random());
 	}
 
-	public double[] rejectionSample(String X, Hashtable evidence,
-			int numberOfSamples, Random r) {
+	public double[] rejectionSample(String X, Hashtable evidence, int numberOfSamples, Random r) {
 		double[] retval = new double[2];
 		for (int i = 0; i < numberOfSamples; i++) {
 			Hashtable sample = getPriorSample(r);
@@ -173,19 +172,22 @@ public class BayesNet {
 
 	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples,	Random r) {
 		double[] retval = new double[2];
+		double tmpVal = 0.0;
 		List<BayesNetNode> variableNodes = getVariableNodes();
+	
 		for (int i = 0; i < numberOfSamples; i++) {
+			
 			Hashtable<String, Boolean> x = new Hashtable<String, Boolean>();
 			double w = 1.0;
 			
-			
 			for (BayesNetNode node : variableNodes) {
-				if (evidence.get(node.getVariable()) != null) {
-
-					w *= node.probabilityOf(x);
+				if (evidence.get(node.getVariable()) != null) {//se ho evidenza per questa var
+					tmpVal = node.probabilityOf(x);
+					if(tmpVal!= -1.0)w *=tmpVal; 
+					System.out.println(tmpVal);
 					System.out.println("Evidentza trovata " +w);
 					x.put(node.getVariable(), evidence.get(node.getVariable()));
-				} else {
+				} else { //se non ho evidenza, simulo
 					x.put(node.getVariable(), node.isTrueFor(r.nextDouble(), x));
 				}
 			}
@@ -238,10 +240,8 @@ public class BayesNet {
 		return likelihoodWeighting(X, evidence, numberOfSamples, new Random());
 	}
 
-	public double[] rejectionSample(String X,
-			Hashtable<String, Boolean> evidence, int numberOfSamples) {
-		return rejectionSample(X, evidence, numberOfSamples,
-				new Random());
+	public double[] rejectionSample(String X, Hashtable<String, Boolean> evidence, int numberOfSamples) {
+		return rejectionSample(X, evidence, numberOfSamples, new Random());
 	}
 
 	/**

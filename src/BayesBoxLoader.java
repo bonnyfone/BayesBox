@@ -213,18 +213,18 @@ public class BayesBoxLoader {
 		BayesBoxLoader bay = new BayesBoxLoader("/home/ziby/Scrivania/test bayes/ee3.xml");
 		BayesNet net = bay.getBayesNet();
 		
-		//net.getPriorSample();
+		//System.out.println(net.getPriorSample());
 	
 		System.out.println(net.getVariables().toString());
 //		
 		
 		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
 		//evidence.put("id0", true);
-		//evidence.put("id1", true);
+		evidence.put("id0", true);
 		
 		//evidence.put("node_2", true);
 		
-		double[] ris =net.likelihoodWeighting("id2", evidence, 100);
+		double[] ris =net.likelihoodWeighting("id1", evidence, 100);
 		System.out.println(ris[0]+" , " + ris[1] );
 
 //		boolean i = true;

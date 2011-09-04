@@ -47,22 +47,19 @@ public class ProbabilityDistribution {
 	}
 
 	public double probabilityOf(Map<String, Boolean> conditions) {
-		double prob = 0.0;
+		double prob = -1.0;
+		boolean sentinel=true;
 		for (Row row : rows) {
 			boolean rowMeetsAllConditions = true;
 			if(conditions==null)System.out.println("conditions null");
 			for (Map.Entry<String, Boolean> c : conditions.entrySet()) {
-				//System.out.println(c);
-				if(c==null)System.out.println("c is null");
-				if(c.getKey()==null)System.out.println("key null");
-				if(c.getValue()==null)System.out.println("value null");
 				if (!(row.matches(c.getKey(), c.getValue()))) {
 					rowMeetsAllConditions = false;
-					//System.out.println("Row doesn't meets all cond..");
 					break;
 				}
 			}
 			if (rowMeetsAllConditions) {
+				if(sentinel){ prob=0.0;sentinel=false; }
 				prob += row.probability;
 			}
 		}
