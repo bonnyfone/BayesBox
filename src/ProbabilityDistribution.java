@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,30 @@ public class ProbabilityDistribution {
 		return probabilityOf(h);
 	}
 
+	/*
+	public double probabilityOf(Map<String, Boolean> conditions) {
+        double prob = 0.0;
+        for (Row row : rows) {
+                Iterator iter = conditions.keySet().iterator();
+                boolean rowMeetsAllConditions = true;
+                while (iter.hasNext()) {
+                        String variable = (String) iter.next();
+                        boolean value = ((Boolean) conditions.get(variable))
+                                        .booleanValue();
+                        if (!(row.matches(variable, value))) {
+                                rowMeetsAllConditions = false;
+                                break;
+                                // return false;
+                        }
+                }
+                if (rowMeetsAllConditions) {
+                        prob += row.probability;
+                }
+        }
+
+        return prob;
+}
+*/
 	public double probabilityOf(Map<String, Boolean> conditions) {
 		double prob = -1.0;
 		boolean sentinel=true;

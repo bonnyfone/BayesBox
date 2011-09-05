@@ -1,4 +1,5 @@
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -129,6 +130,8 @@ public class BayesNet {
 
 			}
 		}
+		
+		
 	}
 	
 	
@@ -169,6 +172,7 @@ public class BayesNet {
 		if(evidence.get(Y) == null){ //non compariva nell'evidenza
 			//System.out.println("NON compariva nell'evidenza");
 			double tmpRis=0.0;
+			
 
 			boolean value=true;
 			for(int i=0;i<2;i++){
@@ -240,7 +244,7 @@ public class BayesNet {
 				}
 			}
 		}
-		System.out.println(retval[0] + " - " +retval[1]);
+		//System.out.println(retval[0] + " - " +retval[1]);
 		retval = Util.normalize(retval); //normalizzo il risultato
 
 		//preparo il risultato
@@ -255,7 +259,7 @@ public class BayesNet {
 
 	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples,	Random r) {
 		double[] retval = new double[2];
-		double tmpVal = 0.0;
+		double tmpVal = 1.0;
 		List<BayesNetNode> variableNodes = getVariableNodes();
 
 		for (int i = 0; i < numberOfSamples; i++) {
@@ -267,6 +271,7 @@ public class BayesNet {
 				if (evidence.get(node.getVariable()) != null) {//se ho evidenza per questa var
 					tmpVal = node.probabilityOf(x);
 					if(tmpVal!= -1.0)w *=tmpVal; 
+					//w*=tmpVal;
 					//System.out.println(tmpVal);
 					//System.out.println("Evidentza trovata " +w);
 					x.put(node.getVariable(), evidence.get(node.getVariable()));
@@ -282,6 +287,7 @@ public class BayesNet {
 			}
 
 		}
+		//System.out.println(retval[0]);
 		//return retval;
 		return Util.normalize(retval);
 	}
@@ -525,7 +531,7 @@ public class BayesNet {
 	}
 	 */
 	
-    private static Hashtable<String, Boolean> cloneEvidenceVariables(
+    public static Hashtable<String, Boolean> cloneEvidenceVariables(
             Hashtable<String, Boolean> evidence) {
     Hashtable<String, Boolean> cloned = new Hashtable<String, Boolean>();
     Iterator<String> iter = evidence.keySet().iterator();

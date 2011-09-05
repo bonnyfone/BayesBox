@@ -1,9 +1,7 @@
-import java.awt.List;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -64,7 +62,6 @@ public class BayesBoxLoader {
 
 	
 	public BayesNet getBayesNet(){
-
 		//Tmp creation
 		ArrayList<BayesNetNode> tmpNodes = new ArrayList<BayesNetNode>();
 		
@@ -90,7 +87,6 @@ public class BayesBoxLoader {
 						break;
 					}
 				}
-				
 				//DEBUG
 				System.out.println("NODE name: " + tmpNode.getVariable()       + "\n" +
 								   "     desc: " + tmpNode.getDescription()    + "\n" +
@@ -99,7 +95,6 @@ public class BayesBoxLoader {
 				tmpNodes.add(tmpNode);
 			}
 		}
-		
 		
 		//Estraggo dipendenze
 		nodeLst = XMLstruct.getElementsByTagName("DIST");
@@ -152,11 +147,8 @@ public class BayesBoxLoader {
 								if(subchild.item(j).getAttributes().getNamedItem("INDEXES").getTextContent().equals("")){
 									isRootNode=true;
 								}
-								
 							}
 						}
-
-						
 					}
 				}
 				//if(dependingNodes.size()==0)dependingNodes.add(currentNode);
@@ -166,7 +158,7 @@ public class BayesBoxLoader {
 					currentNode.influencedBy(dependingNodes);
 					inflateDistribution(currentNode,smartValue);
 				}
-				System.out.println("Distribution:\n"+currentNode.getDistribution().toString());
+				System.out.println("Distribution:\n"+currentNode.getDistributionInfo());
 			}
 			
 		}  
@@ -178,8 +170,6 @@ public class BayesBoxLoader {
 		
 		 
 		return new BayesNet(roots);
-		//BayesNet result = new BayesNe
-		
 	}
 	
 	private void inflateDistribution(BayesNetNode node, ArrayList<String> values){
@@ -205,6 +195,12 @@ public class BayesBoxLoader {
 		return ris;
 	}
 	
+	/**
+	 * Estrae il nodo della rete con uno specifico id
+	 * @param list lista di nodi
+	 * @param id id del nodo
+	 * @return il nodo cercato
+	 */
 	private BayesNetNode getBayesNetNodeById(ArrayList<BayesNetNode> list,String id){
 		
 		for(int i=0;i<list.size();i++){
@@ -215,31 +211,52 @@ public class BayesBoxLoader {
 	} 
 	
 	
+
+	
 	///DEBUG///
 	public static void main(String argv[]) {
-		BayesBoxLoader bay = new BayesBoxLoader("/home/ziby/Scrivania/test bayes/ee3.xml");
+		BayesBoxLoader bay = new BayesBoxLoader("/home/ziby/Scrivania/test bayes/c.xml");
 		BayesNet net = bay.getBayesNet();
 		
 		//System.out.println(net.getPriorSample());
-	
 		//System.out.println(net.getVariables().toString());
 
-
+		String var ="node_9";
 		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
-		evidence.put("id0", true);
-		//evidence.put("node_4", true);
-		//evidence.put("node_6", true);
-		 
+//		evidence.put("node_1", true);
+//		evidence.put("node_4", true);
+		evidence.put("node_3", true);
+		
+		Hashtable< String, Boolean> evidence2=BayesNet.cloneEvidenceVariables(evidence);
+		Hashtable< String, Boolean> evidence3=BayesNet.cloneEvidenceVariables(evidence);
 
 		//TEST di enumerationAsk
-		double[] ris =net.enumerationAsk("id1", evidence);
- 		System.out.println(ris[0]+" , " + ris[1] );		
+		System.out.println("\n---------------------");
+		System.out.println(">>>> Enumeration Ask");
+		long endTime,startTime;
+		startTime = System.currentTimeMillis();
+		double[] ris =net.enumerationAsk(var, evidence);
+		endTime = System.currentTimeMillis();
+ 		System.out.println(ris[0]+" , " + ris[1] );	
+		 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
 		
 		//TEST di LIKELIHOODWEIGHTING
-		//double[] ris =net.likelihoodWeighting("id1", evidence, 1000);
-		//System.out.println(ris[0]+" , " + ris[1] );
+ 		System.out.println(">>>> Likelihood");
+ 		startTime = System.currentTimeMillis();
+ 		double[] ris2 =net.likelihoodWeighting(var, evidence2, 51);
+		endTime = System.currentTimeMillis();
+		System.out.println(ris2[0]+" , " + ris2[1] );
+		 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
 		  
-		//TEST di REJECTIONSAMPLING
+		//TEST di REJECTIONSAMPLING		 
+		System.out.println(">>>> Rejectionsampling");
+	 	startTime = System.currentTimeMillis();
+	 	double[] ris3 =net.rejectionSample(var, evidence3, 5000);
+		endTime = System.currentTimeMillis();
+		System.out.println(ris3[0]+" , " + ris3[1] + " (campioni consistenti: "+(int)ris3[2]+", "+ris3[3]+"%)");
+		 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+			  		 
+//		//TEST di REJECTIONSAMPLING
 //		double[] ris2 = net.rejectionSample("id1", evidence, 100);
 //		System.out.println(ris2[0]+" , " + ris2[1] + " (campioni consistenti: "+(int)ris2[2]+", "+ris2[3]+"%)");
 
