@@ -217,18 +217,19 @@ public class BayesBoxLoader {
 	
 	///DEBUG///
 	public static void main(String argv[]) {
-		BayesBoxLoader bay = new BayesBoxLoader("/home/ziby/Scrivania/test bayes/asia.xml");
+		BayesBoxLoader bay = new BayesBoxLoader("/home/ziby/Scrivania/test_bayes/c.xml");
 		BayesNet net = bay.getBayesNet();
 		
 		//System.out.println(net.getPriorSample());
 		//System.out.println(net.getVariables().toString());
 
 		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
-		String var = "TUBERCULOSIS_OR_LUNG_CANCER";
+		String var = "my";
 //		evidence.put("node_7", true);
 //		evidence.put("node_8", false);
-//		evidence.put("pxr", true);
-//		evidence.put("my", true);
+		evidence.put("smk", true);
+		evidence.put("pxr", false);
+		evidence.put("brnc", true);
 //
 		Hashtable< String, Boolean> evidence2=BayesNet.cloneEvidenceVariables(evidence);
 		Hashtable< String, Boolean> evidence3=BayesNet.cloneEvidenceVariables(evidence);
