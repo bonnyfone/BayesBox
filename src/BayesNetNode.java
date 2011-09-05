@@ -128,7 +128,7 @@ public class BayesNetNode {
                 HashMap<String, Boolean> conditions = new HashMap<String, Boolean>();
                 if (isRoot()) {
                 		System.out.println(getVariable() + " is root!");
-                        //conditions.put(getVariable(), Boolean.TRUE);
+                        conditions.put(getVariable(), Boolean.TRUE);
                 } else {
             
                 	for (int i = 0; i < parents.size(); i++) {

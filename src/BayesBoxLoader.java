@@ -107,10 +107,10 @@ public class BayesBoxLoader {
 		//Var di comodo per evitare allocazioni ripetute
 		BayesNetNode currentNode;
 		ArrayList<BayesNetNode> dependingNodes;
-		
+		boolean isRootNode;
 		for (int s = 0; s < nodeLst.getLength(); s++) {
 			Node fstNode = nodeLst.item(s);
-			
+			isRootNode=false;
 			if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
 				
 				NodeList child = fstNode.getChildNodes();
@@ -149,16 +149,23 @@ public class BayesBoxLoader {
 								tmpVal = (tmpVal.subSequence(0,tmpVal.indexOf(" "))).toString().trim();
 								smartValue.add(tmpVal);
 								//System.out.println("Value found: "+tmpVal);
+								if(subchild.item(j).getAttributes().getNamedItem("INDEXES").getTextContent().equals("")){
+									isRootNode=true;
+								}
 								
 							}
 						}
+
+						
 					}
 				}
 				//if(dependingNodes.size()==0)dependingNodes.add(currentNode);
-				
-				currentNode.influencedBy(dependingNodes);
-				inflateDistribution(currentNode,smartValue);
-
+				if(isRootNode){
+					currentNode.setProbability(true, Double.parseDouble(smartValue.get(0)));
+				}else{
+					currentNode.influencedBy(dependingNodes);
+					inflateDistribution(currentNode,smartValue);
+				}
 				System.out.println("Distribution:\n"+currentNode.getDistribution().toString());
 			}
 			
@@ -169,7 +176,7 @@ public class BayesBoxLoader {
 		for(int i=0;i<tmpNodes.size();i++)
 			if(tmpNodes.get(i).isRoot())roots.add(tmpNodes.get(i));
 		
-		
+		 
 		return new BayesNet(roots);
 		//BayesNet result = new BayesNe
 		
@@ -215,25 +222,25 @@ public class BayesBoxLoader {
 		
 		//System.out.println(net.getPriorSample());
 	
-		System.out.println(net.getVariables().toString());
+		//System.out.println(net.getVariables().toString());
 
 
 		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
-		//evidence.put("id1", true);
+		evidence.put("id0", true);
 		//evidence.put("node_4", true);
 		//evidence.put("node_6", true);
 		 
 
 		//TEST di enumerationAsk
-		double[] ris =net.enumerationAsk("id2", evidence);
-		System.out.println(ris[0]+" , " + ris[1] );		
+		double[] ris =net.enumerationAsk("id1", evidence);
+ 		System.out.println(ris[0]+" , " + ris[1] );		
 		
 		//TEST di LIKELIHOODWEIGHTING
-//		double[] ris =net.likelihoodWeighting("node_5", evidence, 1000);
-//		System.out.println(ris[0]+" , " + ris[1] );
+		//double[] ris =net.likelihoodWeighting("id1", evidence, 1000);
+		//System.out.println(ris[0]+" , " + ris[1] );
 		  
 		//TEST di REJECTIONSAMPLING
-//		double[] ris2 = net.rejectionSample("node_9", evidence, 100);
+//		double[] ris2 = net.rejectionSample("id1", evidence, 100);
 //		System.out.println(ris2[0]+" , " + ris2[1] + " (campioni consistenti: "+(int)ris2[2]+", "+ris2[3]+"%)");
 
 //		boolean i = true;

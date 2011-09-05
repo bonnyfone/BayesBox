@@ -134,64 +134,59 @@ public class BayesNet {
 	
 	public double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence){
 		System.out.println("Calling enumerationAsk");
-		//predispongo l'alg a funzionare anche con un numero di stati > 2
+		//predispongo l'alg a funzionare anche con un numero di stati > 2 ??
 		BayesNetNode q = getNodeOf(X);
 		double[] ris = new double[q.getStateNames().length]; 
-		boolean tmp;
 		
+		
+		evidence.put(X, true);
+		ris[0] = enumerateAll(getVariables(),evidence);
+		
+		evidence.put(X, false);
+		ris[1] = enumerateAll(getVariables(),evidence);
+		
+		/*
+		boolean tmp;
 		for(int i=0; i<q.getStateNames().length;i++){
-			tmp=Boolean.parseBoolean(q.getStateNames()[0]); //in questo punto, assumo una classificazione binaria
+			tmp=Boolean.parseBoolean(q.getStateNames()[i]); //in questo punto, assumo una classificazione binaria
 			evidence.put(X, tmp);
 			ris[i] = enumerateAll(getVariables(),evidence);
-		}
+		}*/
 		
 		
-		
+		//System.out.println(ris[0]+" - "+ris[1]);
 		return Util.normalize(ris);
 	}
 	
 //	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>
 //	probabilityOf forse non va bene per fare l'enumeraionAsk....
 	private double enumerateAll(List<String> vars,Hashtable<String, Boolean> evidence){
-		System.out.println("call enumerateALL with " + vars.size() + "vars"); 
+		//System.out.println("call enumerateALL with " + vars.size() + "vars"); 
 		if(vars.size()==0)return 1.0;
 		
 		String Y = Util.first(vars);
-		Hashtable<String, Boolean> parents = new Hashtable<String, Boolean>();
 		double probOf;
 		if(evidence.get(Y) == null){ //non compariva nell'evidenza
-			System.out.println("NON compariva nell'evidenza");
+			//System.out.println("NON compariva nell'evidenza");
 			double tmpRis=0.0;
-			//classificazione binaria
+
 			boolean value=true;
-			
 			for(int i=0;i<2;i++){
-				Hashtable<String, Boolean> newEvidence=(Hashtable<String, Boolean>) evidence.clone();
+				Hashtable<String, Boolean> newEvidence=cloneEvidenceVariables(evidence);
 				newEvidence.put(Y, value);
-//				List<BayesNetNode> genitori = getNodeOf(Y).getParents();
-//				for(int j=0;j<genitori.size();j++){
-//					parents.put(genitori.get(j).getVariable(), false); //PER FARE TEST, NON HA SENSO...
-//				}
-//				probOf=probabilityOf(Y, value, parents);
-				probOf = getNodeOf(Y).getDistribution().probabilityOf("", value);
-				System.out.println("prob posteriori:" +probOf);
+				
+				probOf = probabilityOf(Y, value, newEvidence);// getNodeOf(Y).getDistribution().probabilityOf(Y, value);
+				//System.out.println("prob posteriori:" +probOf);
 				tmpRis +=  probOf * enumerateAll(Util.rest(vars), newEvidence);
-				value=!value;
+				value=!value;  
 			} 
+			//System.out.println("tmpRis: +"+tmpRis);
 			return tmpRis;
-		}else{ //compariva nell'evidenza
-			System.out.println("compariva nell'evidenza");
-			//List<BayesNetNode> genitori = getNodeOf(Y).getParents();
-			System.out.println((Boolean)evidence.get(Y)); 
-//			List<BayesNetNode> genitori = getNodeOf(Y).getParents();
-//			for(int j=0;j<genitori.size();j++){
-//				parents.put(genitori.get(j).getVariable(), true); //PER FARE TEST, NON HA SENSO...
-//			}
-//			probOf = probabilityOf(Y, (Boolean)evidence.get(Y), parents);
-			probOf = getNodeOf(Y).getDistribution().probabilityOf("", (Boolean)evidence.get(Y));
-			System.out.println("prob posteriori:" +probOf);
-			return  probOf* enumerateAll(Util.rest(vars), evidence);
-			
+		}else{//compariva nell'evidenza 
+			//System.out.println("compariva nell'evidenza");
+			probOf = probabilityOf(Y, (Boolean)evidence.get(Y), evidence);//getNodeOf(Y).getDistribution().probabilityOf(Y, (Boolean)evidence.get(Y));
+			//System.out.println("prob posteriori:" +probOf);
+			return  probOf * enumerateAll(Util.rest(vars), evidence);
 		}
 		  
 	}
@@ -529,4 +524,21 @@ public class BayesNet {
 		return table;
 	}
 	 */
+	
+    private static Hashtable<String, Boolean> cloneEvidenceVariables(
+            Hashtable<String, Boolean> evidence) {
+    Hashtable<String, Boolean> cloned = new Hashtable<String, Boolean>();
+    Iterator<String> iter = evidence.keySet().iterator();
+    while (iter.hasNext()) {
+            String key = iter.next();
+            Boolean bool = evidence.get(key);
+            if (bool.equals(Boolean.TRUE)) {
+                    cloned.put(key, Boolean.TRUE);
+            } else if ((evidence.get(key)).equals(Boolean.FALSE)) {
+                    cloned.put(key, Boolean.FALSE);
+            }
+    }
+    return cloned;
+}
+
 }
