@@ -168,8 +168,10 @@ public class BayesBoxLoader {
 		for(int i=0;i<tmpNodes.size();i++)
 			if(tmpNodes.get(i).isRoot())roots.add(tmpNodes.get(i));
 		
-		 
-		return new BayesNet(roots);
+		//Costruisce la rete di Bayes e calcola una lista dei nodi in ordine consistente.
+		BayesNet ris = new BayesNet(roots);
+		ris.getVariables();
+		return ris;
 	}
 	
 	private void inflateDistribution(BayesNetNode node, ArrayList<String> values){
@@ -215,46 +217,68 @@ public class BayesBoxLoader {
 	
 	///DEBUG///
 	public static void main(String argv[]) {
-		BayesBoxLoader bay = new BayesBoxLoader("/home/ziby/Scrivania/test bayes/c.xml");
+		BayesBoxLoader bay = new BayesBoxLoader("/home/ziby/Scrivania/test bayes/asia.xml");
 		BayesNet net = bay.getBayesNet();
 		
 		//System.out.println(net.getPriorSample());
 		//System.out.println(net.getVariables().toString());
 
-		String var ="node_9";
 		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
-//		evidence.put("node_1", true);
-//		evidence.put("node_4", true);
-		evidence.put("node_3", true);
-		
+		String var = "TUBERCULOSIS_OR_LUNG_CANCER";
+//		evidence.put("node_7", true);
+//		evidence.put("node_8", false);
+//		evidence.put("pxr", true);
+//		evidence.put("my", true);
+//
 		Hashtable< String, Boolean> evidence2=BayesNet.cloneEvidenceVariables(evidence);
 		Hashtable< String, Boolean> evidence3=BayesNet.cloneEvidenceVariables(evidence);
-
-		//TEST di enumerationAsk
+		  
+		//TEST di enumerationAsk  ********************************************************************************
 		System.out.println("\n---------------------");
 		System.out.println(">>>> Enumeration Ask");
 		long endTime,startTime;
 		startTime = System.currentTimeMillis();
-		double[] ris =net.enumerationAsk(var, evidence);
-		endTime = System.currentTimeMillis();
- 		System.out.println(ris[0]+" , " + ris[1] );	
-		 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+		//double[] ris =net.enumerationAsk(var, evidence);
+		double[] ris;
+		try {
+			ris = net.enumerationAsk(var, evidence,BayesNet.MODE_DESCRIPTION);
+			endTime = System.currentTimeMillis();
+	 		System.out.println(ris[0]+" , " + ris[1] );	
+			 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+		} catch (BayesBoxIOExc e) {
+			System.out.println(e.getError());
+		}
+
 		
-		//TEST di LIKELIHOODWEIGHTING
+		//TEST di LIKELIHOODWEIGHTING *****************************************************************************
  		System.out.println(">>>> Likelihood");
  		startTime = System.currentTimeMillis();
- 		double[] ris2 =net.likelihoodWeighting(var, evidence2, 51);
-		endTime = System.currentTimeMillis();
-		System.out.println(ris2[0]+" , " + ris2[1] );
-		 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+ 		
+ 		double[] ris2;
+		try {
+			ris2 = net.likelihoodWeighting(var, evidence2, 500, BayesNet.MODE_DESCRIPTION);
+			endTime = System.currentTimeMillis();
+			System.out.println(ris2[0]+" , " + ris2[1] );
+			 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+		} catch (BayesBoxIOExc e) {
+			System.out.println(e.getError());
+		}
+
 		  
 		//TEST di REJECTIONSAMPLING		 
 		System.out.println(">>>> Rejectionsampling");
 	 	startTime = System.currentTimeMillis();
-	 	double[] ris3 =net.rejectionSample(var, evidence3, 5000);
-		endTime = System.currentTimeMillis();
-		System.out.println(ris3[0]+" , " + ris3[1] + " (campioni consistenti: "+(int)ris3[2]+", "+ris3[3]+"%)");
-		 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+	 	double[] ris3;
+		try {
+			ris3 = net.rejectionSample(var, evidence3, 5000, BayesNet.MODE_DESCRIPTION);
+			endTime = System.currentTimeMillis();
+			System.out.println(ris3[0]+" , " + ris3[1] + " (campioni consistenti: "+(int)ris3[2]+", "+ris3[3]+"%)");
+			 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+		} catch (BayesBoxIOExc e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getError());
+		}
+
 			  		 
 //		//TEST di REJECTIONSAMPLING
 //		double[] ris2 = net.rejectionSample("id1", evidence, 100);

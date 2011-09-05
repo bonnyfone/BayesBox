@@ -18,6 +18,9 @@ import javax.xml.bind.util.ValidationEventCollector;
 
 public class BayesNet {
 
+	public static final int MODE_DESCRIPTION = 0;
+	public static final int MODE_ID = 1;
+
 	/*** test ***/
 	public static void main(String args[]){
 		BayesNetNode root1 = new BayesNetNode("root1");
@@ -112,7 +115,10 @@ public class BayesNet {
 	public Hashtable<String, Boolean> getIdFromDescription(Hashtable<String, Boolean> evidence) throws BayesBoxIOExc{
 		Hashtable<String, Boolean> ris = new Hashtable<String, Boolean>();
 		for(BayesNetNode n : variableNodes){
-			if(evidence.get(n.getDescription()) != null)ris.put(n.getVariable(),evidence.get(n.getDescription()));
+			if(evidence.get(n.getDescription()) != null){
+				ris.put(n.getVariable(),evidence.get(n.getDescription()));
+				//System.out.println(n.getVariable()+evidence.get(n.getDescription())+"");
+			}
 		}
 		if(ris.size()!=evidence.size())throw new BayesBoxIOExc("La descrizione di una delle variabili non corrisponde a nessuna variabile.");
 		return ris;
@@ -149,12 +155,19 @@ public class BayesNet {
 
 			}
 		}
-		
-		
 	}
 	
 	
-	public double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence){
+	public double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence, int queryMode) throws BayesBoxIOExc{
+		if(queryMode == MODE_ID){
+				System.out.println("MODE_ID");
+				return enumerationAsk(X, evidence);
+			}
+		else // (queryMode == MODE_DESCRIPTION)
+			return enumerationAsk(getIdFromDescription(X), getIdFromDescription(evidence));
+	}
+	
+	private double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence){
 		System.out.println("Calling enumerationAsk");
 		//predispongo l'alg a funzionare anche con un numero di stati > 2 ??
 		BayesNetNode q = getNodeOf(X);
@@ -276,7 +289,7 @@ public class BayesNet {
 		return ris;
 	}
 
-	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples,	Random r) {
+	private double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples,	Random r) {
 		double[] retval = new double[2];
 		double tmpVal = 1.0;
 		List<BayesNetNode> variableNodes = getVariableNodes();
@@ -344,12 +357,18 @@ public class BayesNet {
 		return mcmcAsk(X, evidence, numberOfVariables, new Random());
 	}
 	 */
-	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples) {
-		return likelihoodWeighting(X, evidence, numberOfSamples, new Random());
+	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples, int queryMode) throws BayesBoxIOExc {
+		if(queryMode == MODE_ID)
+			return likelihoodWeighting(X, evidence, numberOfSamples, new Random());
+		else
+			return likelihoodWeighting(getIdFromDescription(X), getIdFromDescription(evidence), numberOfSamples, new Random());
 	}
 
-	public double[] rejectionSample(String X, Hashtable<String, Boolean> evidence, int numberOfSamples) {
-		return rejectionSample(X, evidence, numberOfSamples, new Random());
+	public double[] rejectionSample(String X, Hashtable<String, Boolean> evidence, int numberOfSamples, int queryMode) throws BayesBoxIOExc {
+		if(queryMode == MODE_ID)
+			return rejectionSample(X, evidence, numberOfSamples, new Random());
+		else
+			return rejectionSample(getIdFromDescription(X), getIdFromDescription(evidence), numberOfSamples, new Random());
 	}
 
 	/**
