@@ -101,6 +101,25 @@ public class BayesNet {
 		}
 		return variables;
 	}
+	
+	public String getIdFromDescription(String desc) throws BayesBoxIOExc{
+		for(BayesNetNode n : variableNodes){
+			if(n.getDescription().equals(desc))return n.getVariable();
+		}
+		throw new BayesBoxIOExc("La descrizione ["+desc+"] non corrisponde a nessuna variabile.");
+	}
+
+	public Hashtable<String, Boolean> getIdFromDescription(Hashtable<String, Boolean> evidence) throws BayesBoxIOExc{
+		Hashtable<String, Boolean> ris = new Hashtable<String, Boolean>();
+		for(BayesNetNode n : variableNodes){
+			if(evidence.get(n.getDescription()) != null)ris.put(n.getVariable(),evidence.get(n.getDescription()));
+		}
+		if(ris.size()!=evidence.size())throw new BayesBoxIOExc("La descrizione di una delle variabili non corrisponde a nessuna variabile.");
+		return ris;
+	}
+	
+	
+	
 
 	public double probabilityOf(String Y, Boolean value, Hashtable<String, Boolean> evidence) {
 		BayesNetNode y = getNodeOf(Y);
