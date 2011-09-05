@@ -143,10 +143,9 @@ public class BayesBoxLoader {
 						for(int j=0;j< subchild.getLength();j++){
 							String subval = subchild.item(j).getNodeName();
 							
-							
 							if(subval.equals("DPI")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
-								tmpVal = (subchild.item(j).getTextContent()+"").trim();
 								
+								tmpVal = (subchild.item(j).getTextContent()+"").trim();
 								tmpVal = (tmpVal.subSequence(0,tmpVal.indexOf(" "))).toString().trim();
 								smartValue.add(tmpVal);
 								//System.out.println("Value found: "+tmpVal);
@@ -156,6 +155,7 @@ public class BayesBoxLoader {
 					}
 				}
 				//if(dependingNodes.size()==0)dependingNodes.add(currentNode);
+				
 				currentNode.influencedBy(dependingNodes);
 				inflateDistribution(currentNode,smartValue);
 
@@ -216,16 +216,25 @@ public class BayesBoxLoader {
 		//System.out.println(net.getPriorSample());
 	
 		System.out.println(net.getVariables().toString());
-//		
-		
+
+
 		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
-		//evidence.put("id0", true);
-		evidence.put("id0", true);
+		//evidence.put("id1", true);
+		//evidence.put("node_4", true);
+		//evidence.put("node_6", true);
+		 
+
+		//TEST di enumerationAsk
+		double[] ris =net.enumerationAsk("id2", evidence);
+		System.out.println(ris[0]+" , " + ris[1] );		
 		
-		//evidence.put("node_2", true);
-		
-		double[] ris =net.likelihoodWeighting("id1", evidence, 100);
-		System.out.println(ris[0]+" , " + ris[1] );
+		//TEST di LIKELIHOODWEIGHTING
+//		double[] ris =net.likelihoodWeighting("node_5", evidence, 1000);
+//		System.out.println(ris[0]+" , " + ris[1] );
+		  
+		//TEST di REJECTIONSAMPLING
+//		double[] ris2 = net.rejectionSample("node_9", evidence, 100);
+//		System.out.println(ris2[0]+" , " + ris2[1] + " (campioni consistenti: "+(int)ris2[2]+", "+ris2[3]+"%)");
 
 //		boolean i = true;
 //		int c =0;
