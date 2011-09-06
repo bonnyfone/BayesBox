@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
 /**
  * Classe che rappresenta una rete di Bayes.
  * Contiente metodi per la manipolazione e l'inferenza.
