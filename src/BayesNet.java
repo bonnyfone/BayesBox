@@ -1,75 +1,22 @@
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-
-import javax.xml.bind.util.ValidationEventCollector;
 
 
 /**
- * @author Ravi Mohan
- * 
+ * Classe che rappresenta una rete di Bayes.
+ * Contiente metodi per la manipolazione e l'inferenza.
+ * <br><i>(alcune idee e parti del codice appartengono a Ravi Mohan - MIT)</i>
  */
-
 public class BayesNet {
 
+	/** Identifica la modalità operativa che lavora tramite la descrizione delle variabili casuali. */
 	public static final int MODE_DESCRIPTION = 0;
+
+	/** Identifica la modalità operativa che lavora tramite gli ID delle variabili casuali (SCONSIGLIATO). */
 	public static final int MODE_ID = 1;
-
-	/*** test ***/
-	public static void main(String args[]){
-		BayesNetNode root1 = new BayesNetNode("root1");
-		BayesNetNode root2 = new BayesNetNode("root2");
-		BayesNetNode child1 = new BayesNetNode("child1");
-
-
-		root2.influencedBy(new ArrayList<BayesNetNode>());
-		root1.influencedBy(new ArrayList<BayesNetNode>());
-		root1.setProbability(true, 0.99);
-		root2.setProbability(true, 0.99);
-		
-		child1.influencedBy(root1,root2);
-
-		child1.setProbability(true,  true,   0.01);
-		child1.setProbability(true,  false,  0.99);
-		child1.setProbability(false, true,   0.5);
-		child1.setProbability(false, false,  0.5);
-
-		//Map <String, Boolean> m =new HashMap<String, Boolean>();
-		//m.put(root1.getVariable(), false);
-		//m.put(root1.getVariable(), false);
-
-
-		Hashtable<String, Boolean> ht = new Hashtable<String, Boolean>();
-		ht.put(root1.getVariable(), true);
-		ht.put(root2.getVariable(), false);
-		//child1.influencedBy(root1, root2);
-
-
-		//child1.setProbability(0.1, true,    true, true );
-		//child1.setProbability(0.9, false,   true, true );
-
-		//BayesNet net = new BayesNet(root1,root2);
-		BayesNet net = new BayesNet(root1,root2);
-
-		net.getPriorSample();
-
-		System.out.println("CHILD\n"+child1.getDistribution().toString());
-		System.out.println(root1.getDistribution().toString());
-		System.out.println(root2.getDistribution().toString());
-
-		System.out.println("BayesNet probability of TRUE: "+net.probabilityOf("child1", new Boolean(false), ht));
-
-		//System.out.println("Prob of: "+child1.probabilityOf(m));
-		//System.out.println(net.getVariables().toString());
-		//System.out.println(net.getPriorSample().toString());
-		//System.out.println("Figli di " + root1.getVariable() + ": " + root1.getChildren().toString());
-	}
 
 	/** lista dei nodi radice della net */
 	private List<BayesNetNode> roots = new ArrayList<BayesNetNode>();
@@ -77,25 +24,33 @@ public class BayesNet {
 	/** lista di tutti i nodi */
 	private List<BayesNetNode> variableNodes;
 
+	/** Costruttore della rete (1 radice) */
 	public BayesNet(BayesNetNode root) {
 		roots.add(root);
 	}
 
+	/** Costruttore della rete (2 radici) */
 	public BayesNet(BayesNetNode root1, BayesNetNode root2) {
 		this(root1);
 		roots.add(root2);
 	}
 
+	/** Costruttore della rete (3 radici) */
 	public BayesNet(BayesNetNode root1, BayesNetNode root2, BayesNetNode root3) {
 		this(root1, root2);
 		roots.add(root3);
 	}
 
+	/** Costruttore della rete data una lista di radici*/
 	public BayesNet(List<BayesNetNode> rootNodes) {
 		roots = rootNodes;
 	}
 
 
+	/**
+	 * Ritorna una lista delle variabili di cui è composta la rete.
+	 * @return lista di variabili (stringhe)
+	 */
 	public List<String> getVariables() {
 		variableNodes = getVariableNodes();
 		List<String> variables = new ArrayList<String>();
@@ -104,7 +59,13 @@ public class BayesNet {
 		}
 		return variables;
 	}
-	
+
+	/**
+	 * Ritorna l'ID di una variabile a partire dalla sua descrizione.
+	 * @param desc descrizione della variabili
+	 * @return l'ID della variabile
+	 * @throws BayesBoxIOExc solleva un'eccezione se non viene trovata alcuna variabile con quella descrizione.
+	 */
 	public String getIdFromDescription(String desc) throws BayesBoxIOExc{
 		for(BayesNetNode n : variableNodes){
 			if(n.getDescription().equals(desc))return n.getVariable();
@@ -112,6 +73,12 @@ public class BayesNet {
 		throw new BayesBoxIOExc("La descrizione ["+desc+"] non corrisponde a nessuna variabile.");
 	}
 
+	/**
+	 * Fornisce una tabella di ID di variabili a partire dalle loro descrizioni.
+	 * @param evidence tabella sorgente contenente le descrizioni delle variabili e i relativi valori.
+	 * @return una tabella indicizzata per ID delle variabili, con i rispettivi valori.
+	 * @throws BayesBoxIOExc solleva un'eccezione se non viene trovata alcuna variabile con una data descrizione.
+	 */
 	public Hashtable<String, Boolean> getIdFromDescription(Hashtable<String, Boolean> evidence) throws BayesBoxIOExc{
 		Hashtable<String, Boolean> ris = new Hashtable<String, Boolean>();
 		for(BayesNetNode n : variableNodes){
@@ -123,30 +90,38 @@ public class BayesNet {
 		if(ris.size()!=evidence.size())throw new BayesBoxIOExc("La descrizione di una delle variabili non corrisponde a nessuna variabile.");
 		return ris;
 	}
-	
-	
-	
 
+	/**
+	 * Ottiene la probabilità di un dato evento, data una certa evidenza.
+	 * @param Y la variabile che rappresenta un nodo/evento.
+	 * @param value valore interessato.
+	 * @param evidence evidenza
+	 * @return la probabilità dell'evento, data l'evidenza)
+	 */
 	public double probabilityOf(String Y, Boolean value, Hashtable<String, Boolean> evidence) {
 		BayesNetNode y = getNodeOf(Y);
 		if (y == null) {
-			throw new RuntimeException("Unable to find a node with variable "+ Y);
+			throw new RuntimeException("Impossibile trovare il nodo di variabile "+ Y);
 		} else {
+
 			List<BayesNetNode> parentNodes = y.getParents();
-			if (parentNodes.size() == 0) {// root nodes
+
+			// root nodes
+			if (parentNodes.size() == 0) {
 				Hashtable<String, Boolean> YTable = new Hashtable<String, Boolean>();
-				YTable.put(Y, value);
+				YTable.put(Y, value); //piccola forzatura dovuta alla rappresentazione "particolare" del nodo radice
 
 				double prob = y.probabilityOf(YTable);
 				return prob;
 
-			} else {// non rootnodes
+			// non rootnodes
+			} else {
 				Hashtable<String, Boolean> parentValues = new Hashtable<String, Boolean>();
 				for (BayesNetNode parent : parentNodes) {
-					parentValues.put(parent.getVariable(), evidence.get(parent
-							.getVariable()));
+					parentValues.put(parent.getVariable(), evidence.get(parent.getVariable()));
 				}
 				double prob = y.probabilityOf(parentValues);
+				
 				if (value.equals(Boolean.TRUE)) {
 					return prob;
 				} else {
@@ -156,61 +131,64 @@ public class BayesNet {
 			}
 		}
 	}
-	
-	
+
+
+	/**
+	 * Effettua inferenza esatta tramite metodo di enumerazione.
+	 * @param X variabile query.
+	 * @param evidence evidenza 
+	 * @param queryMode modalità della query, può essere<br> -<b> BayesNet.MODE_DESCRIPTION</b> (consigliata) <br>-<b> BayesNet.MODE_ID</b>
+	 * @return la distribuzione di probabilità per l'evento. return[0] = % true, return[1] = % false.
+	 * @throws BayesBoxIOExc
+	 */
 	public double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence, int queryMode) throws BayesBoxIOExc{
 		if(queryMode == MODE_ID){
-				System.out.println("MODE_ID");
-				return enumerationAsk(X, evidence);
-			}
+			System.out.println("MODE_ID");
+			return enumerationAsk(X, evidence);
+		}
 		else // (queryMode == MODE_DESCRIPTION)
 			return enumerationAsk(getIdFromDescription(X), getIdFromDescription(evidence));
 	}
-	
+
+	/**
+	 * Funzione interna che si occupa di eseguire effettivamente l'enumerazione.
+	 */
 	private double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence){
 		System.out.println("Calling enumerationAsk");
 		//predispongo l'alg a funzionare anche con un numero di stati > 2 ??
 		BayesNetNode q = getNodeOf(X);
 		double[] ris = new double[q.getStateNames().length]; 
-		
-		
+
+
 		evidence.put(X, true);
 		ris[0] = enumerateAll(getVariables(),evidence);
-		
+
 		evidence.put(X, false);
 		ris[1] = enumerateAll(getVariables(),evidence);
-		
-		/*
-		boolean tmp;
-		for(int i=0; i<q.getStateNames().length;i++){
-			tmp=Boolean.parseBoolean(q.getStateNames()[i]); //in questo punto, assumo una classificazione binaria
-			evidence.put(X, tmp);
-			ris[i] = enumerateAll(getVariables(),evidence);
-		}*/
-		
-		
-		//System.out.println(ris[0]+" - "+ris[1]);
+
+
 		return Util.normalize(ris);
 	}
-	
-//	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>
-//	probabilityOf forse non va bene per fare l'enumeraionAsk....
+
+	/**
+	 * Metodo interno per l'enumerazione ricorsiva.
+	 */
 	private double enumerateAll(List<String> vars,Hashtable<String, Boolean> evidence){
 		//System.out.println("call enumerateALL with " + vars.size() + "vars"); 
 		if(vars.size()==0)return 1.0;
-		
+
 		String Y = Util.first(vars);
 		double probOf;
 		if(evidence.get(Y) == null){ //non compariva nell'evidenza
 			//System.out.println("NON compariva nell'evidenza");
 			double tmpRis=0.0;
-			
+
 
 			boolean value=true;
 			for(int i=0;i<2;i++){
 				Hashtable<String, Boolean> newEvidence=cloneEvidenceVariables(evidence);
 				newEvidence.put(Y, value);
-				
+
 				probOf = probabilityOf(Y, value, newEvidence);// getNodeOf(Y).getDistribution().probabilityOf(Y, value);
 				//System.out.println("prob posteriori:" +probOf);
 				tmpRis +=  probOf * enumerateAll(Util.rest(vars), newEvidence);
@@ -224,48 +202,79 @@ public class BayesNet {
 			//System.out.println("prob posteriori:" +probOf);
 			return  probOf * enumerateAll(Util.rest(vars), evidence);
 		}
-		  
+
 	}
-	
+
 
 	/**
 	 * Metodo di supporto che restituisce in forma comprensibile la tabella, associando alla var la sua descrizione
 	 * @param source tabella sorgente
 	 * @return tabella con descrizioni
 	 */
-	public Hashtable getComprensiveResult(Hashtable source){
+	public Hashtable<String, Boolean> getComprensiveResult(Hashtable<?, ?> source){
 
 		Hashtable<String, Boolean> ris=new Hashtable<String, Boolean>();
 		for(BayesNetNode n : variableNodes){
 			ris.put(n.getDescription() +"(" +n.getVariable()+")", (Boolean) source.get(n.getVariable()));
-
 		}
 		return ris;
 	}
+	
 
-	public Hashtable getPriorSample(Random r) {
+	/**
+	 * Metodo di inferenza tramite simulazione stocastica LikeliHood Weighting.
+	 * @param X variabile query.
+	 * @param evidence evidenza.
+	 * @param numberOfSamples numero di campioni da generare.
+	 * @param queryMode modalità della query, può essere<br> -<b> BayesNet.MODE_DESCRIPTION</b> (consigliata) <br>-<b> BayesNet.MODE_ID</b>
+	 * @return la distribuzione di probabilità per l'evento. return[0] = % true, return[1] = % false.
+	 * @throws BayesBoxIOExc
+	 */
+	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples, int queryMode) throws BayesBoxIOExc {
+		if(queryMode == MODE_ID)
+			return likelihoodWeighting(X, evidence, numberOfSamples, new Random());
+		else
+			return likelihoodWeighting(getIdFromDescription(X), getIdFromDescription(evidence), numberOfSamples, new Random());
+	}
+
+	/**
+	 * Metodo di inferenza tramite simulazione stocastica Rejection Sampling.
+	 * @param X variabile query.
+	 * @param evidence evidenza.
+	 * @param numberOfSamples numero di campioni da generare.
+	 * @param queryMode modalità della query, può essere<br> -<b> BayesNet.MODE_DESCRIPTION</b> (consigliata) <br>-<b> BayesNet.MODE_ID</b>
+	 * @return la distribuzione di probabilità per l'evento e informazioni sul numero di campioni
+	 * consistenti.<br>return[0] = % true<br> return[1] = % false<br>return[2] = n° campioni consistenti<br> return[3] = % campioni consistenti 
+	 * @throws BayesBoxIOExc
+	 */
+	public double[] rejectionSample(String X, Hashtable<String, Boolean> evidence, int numberOfSamples, int queryMode) throws BayesBoxIOExc {
+		if(queryMode == MODE_ID)
+			return rejectionSample(X, evidence, numberOfSamples, new Random());
+		else
+			return rejectionSample(getIdFromDescription(X), getIdFromDescription(evidence), numberOfSamples, new Random());
+	}
+
+	/**
+	 * Metodo interno che esegue il campionamento PriorSample.
+	 */
+	private Hashtable<String, Boolean> getPriorSample(Random r) {
 		Hashtable<String, Boolean> h = new Hashtable<String, Boolean>();
 		List<BayesNetNode> variableNodes = getVariableNodes();
-		//System.out.println("LISTA: "+variableNodes);
-		int i=0;
-		//System.out.println("Iterazione "+i+": "+h.toString());
 		for (BayesNetNode node : variableNodes) {
-			i++;
 			h.put(node.getVariable(), node.isTrueFor(r.nextDouble(), h));
-			//System.out.println("Iterazione "+i+": "+h.toString());
 		}
 		return h;
 	}
 
-	public Hashtable getPriorSample() {
-		return getPriorSample(new Random());
-	}
 
-	public double[] rejectionSample(String X, Hashtable evidence, int numberOfSamples, Random r) {
+	/**
+	 * Metodo interno per l'implementazione del Rejection Sampling
+	 */
+	private double[] rejectionSample(String X, Hashtable<String, Boolean> evidence, int numberOfSamples, Random r) {
 		double[] retval = new double[2];
 		int consistentSamples = 0;
 		for (int i = 0; i < numberOfSamples; i++) {
-			Hashtable sample = getPriorSample(r);
+			Hashtable<String, Boolean> sample = getPriorSample(r);
 			if (consistent(sample, evidence)) {
 				consistentSamples++;
 				boolean queryValue = ((Boolean) sample.get(X)).booleanValue();
@@ -289,13 +298,15 @@ public class BayesNet {
 		return ris;
 	}
 
+	/**
+	 * Metodo interno per l'implementazione del Likelihood Weighting
+	 */
 	private double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples,	Random r) {
 		double[] retval = new double[2];
 		double tmpVal = 1.0;
 		List<BayesNetNode> variableNodes = getVariableNodes();
 
 		for (int i = 0; i < numberOfSamples; i++) {
-
 			Hashtable<String, Boolean> x = new Hashtable<String, Boolean>();
 			double w = 1.0;
 
@@ -317,77 +328,28 @@ public class BayesNet {
 			} else {
 				retval[1] += w;
 			}
-
-		}
-		//System.out.println(retval[0]);
-		//return retval;
-		return Util.normalize(retval);
-	}
-	/*
-	public double[] mcmcAsk(String X, Hashtable<String, Boolean> evidence,
-			int numberOfVariables, Random r) {
-		double[] retval = new double[2];
-		List nonEvidenceVariables = nonEvidenceVariables(evidence, X);
-		Hashtable<String, Boolean> event = createRandomEvent(
-				nonEvidenceVariables, evidence, r);
-		for (int j = 0; j < numberOfVariables; j++) {
-			Iterator iter = nonEvidenceVariables.iterator();
-			while (iter.hasNext()) {
-				String variable = (String) iter.next();
-				BayesNetNode node = getNodeOf(variable);
-				List<BayesNetNode> markovBlanket = markovBlanket(node);
-				Hashtable mb = createMBValues(markovBlanket, event);
-				// event.put(node.getVariable(), node.isTrueFor(
-				// r.getProbability(), mb));
-				event.put(node.getVariable(), truthValue(rejectionSample(node
-						.getVariable(), mb, 100, r), r));
-				boolean queryValue = (event.get(X)).booleanValue();
-				if (queryValue) {
-					retval[0] += 1;
-				} else {
-					retval[1] += 1;
-				}
-			}
 		}
 		return Util.normalize(retval);
 	}
 
-	public double[] mcmcAsk(String X, Hashtable<String, Boolean> evidence,
-			int numberOfVariables) {
-		return mcmcAsk(X, evidence, numberOfVariables, new Random());
-	}
-	 */
-	public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples, int queryMode) throws BayesBoxIOExc {
-		if(queryMode == MODE_ID)
-			return likelihoodWeighting(X, evidence, numberOfSamples, new Random());
-		else
-			return likelihoodWeighting(getIdFromDescription(X), getIdFromDescription(evidence), numberOfSamples, new Random());
-	}
 
-	public double[] rejectionSample(String X, Hashtable<String, Boolean> evidence, int numberOfSamples, int queryMode) throws BayesBoxIOExc {
-		if(queryMode == MODE_ID)
-			return rejectionSample(X, evidence, numberOfSamples, new Random());
-		else
-			return rejectionSample(getIdFromDescription(X), getIdFromDescription(evidence), numberOfSamples, new Random());
-	}
 
 	/**
 	 * Ottiene una lista delle variabili della rete di bayes in un ordine tale da rispettare le dipendenze interne alla rete.
 	 */
 	private List<BayesNetNode> getVariableNodes(){
 		if(variableNodes != null)return variableNodes;
-		
+
 		System.out.println("Calcolo LISTA con ordine consistente...");
 		List<BayesNetNode> parents = roots;
 		List<BayesNetNode> newVariableNodes = new ArrayList<BayesNetNode>();
 		List<BayesNetNode> rem = new ArrayList<BayesNetNode>();
-		//PASSO 1
+		//-------------PASSO 1
 		//tutti i parents iniziali, sicuramente posso metterli
 		newVariableNodes.addAll(parents);
 
 		for(BayesNetNode iterParents : parents){
 			//if(!newVariableNodes.contains(iterParents))newVariableNodes.add(iterParents);
-
 			List<BayesNetNode> children = iterParents.getChildren();
 			for (BayesNetNode child : children) {
 				if(newVariableNodes.containsAll(child.getParents()))newVariableNodes.add(child);
@@ -400,7 +362,7 @@ public class BayesNet {
 			}
 		}
 
-		//PASSO 2
+		//------------PASSO 2
 		while(rem.size()>0){
 			System.out.println("RIMANGONO: "+rem);
 			parents=rem;
@@ -425,8 +387,6 @@ public class BayesNet {
 		return newVariableNodes;
 	}
 
-
-	
 	/*
 	 * /** DEPRECATO non rispetta una visita consistente 
 	private List<BayesNetNode> getVariableNodes2() {
@@ -435,7 +395,6 @@ public class BayesNet {
 			List<BayesNetNode> newVariableNodes = new ArrayList<BayesNetNode>();
 			List<BayesNetNode> parents = roots;
 			List<BayesNetNode> traversedParents = new ArrayList<BayesNetNode>();
-
 			while (parents.size() != 0) {
 				List<BayesNetNode> newParents = new ArrayList<BayesNetNode>();
 				for (BayesNetNode parent : parents) {
@@ -452,15 +411,31 @@ public class BayesNet {
 						traversedParents.add(parent);
 					}
 				}
-
 				parents = newParents;
 			}
 			variableNodes = newVariableNodes;
 		}
-
 		return variableNodes;
-	}*/
+	}
 
+	 *
+	 */
+	
+	/**
+	 * Metodo che restituisce un campione PriorSample.
+	 * @return una tabella hash che rappresenta un campione.
+	 */
+	public Hashtable<String, Boolean>  getPriorSample() {
+		return getPriorSample(new Random());
+	}
+	
+	
+
+	/**
+	 * Ritorna il nodo della rete avente la seguente variabile.
+	 * @param y variabile
+	 * @return il nodo corrispondente (null se non esiste)
+	 */
 	private BayesNetNode getNodeOf(String y) {
 		List<BayesNetNode> variableNodes = getVariableNodes();
 		for (BayesNetNode node : variableNodes) {
@@ -471,8 +446,14 @@ public class BayesNet {
 		return null;
 	}
 
-	private boolean consistent(Hashtable sample, Hashtable evidence) {
-		Iterator iter = evidence.keySet().iterator();
+	/**
+	 * Stabilisce se il campione passato è consistente con l'evidenza.
+	 * @param sample un campione
+	 * @param evidence evidenza
+	 * @return 
+	 */
+	private boolean consistent(Hashtable<String, Boolean> sample, Hashtable<String, Boolean> evidence) {
+		Iterator<String> iter = evidence.keySet().iterator();
 		while (iter.hasNext()) {
 			String key = (String) iter.next();
 			Boolean value = (Boolean) evidence.get(key);
@@ -485,6 +466,33 @@ public class BayesNet {
 		return true;
 	}
 
+
+	/**
+	 * Metodo per la realizzazione di una copia profonda di una tabella hash
+	 * contenente <i>evidenza</i>
+	 * @param evidence <i>evidenza</i> da clonare
+	 * @return tabella hash contenente <i>evidenza</i> equivalente
+	 */
+	public static Hashtable<String, Boolean> cloneEvidenceVariables(
+			Hashtable<String, Boolean> evidence) {
+		Hashtable<String, Boolean> cloned = new Hashtable<String, Boolean>();
+		Iterator<String> iter = evidence.keySet().iterator();
+		while (iter.hasNext()) {
+			String key = iter.next();
+			Boolean bool = evidence.get(key);
+			if (bool.equals(Boolean.TRUE)) {
+				cloned.put(key, Boolean.TRUE);
+			} else if ((evidence.get(key)).equals(Boolean.FALSE)) {
+				cloned.put(key, Boolean.FALSE);
+			}
+		}
+		return cloned;
+	}
+
+
+	/* ##################################################
+	 * ---- Uso futuro per eliminazione di variabile ----
+	 * ##################################################
 	private Boolean truthValue(double[] ds, Random r) {
 		double value = r.nextDouble();
 		if (value < ds[0]) {
@@ -525,7 +533,47 @@ public class BayesNet {
 		}
 		return nonEvidenceVariables;
 	}
-	/*
+	 */
+
+
+
+	/* ##################################################
+	 *                      Markov
+	 * ##################################################
+	 * 
+	public double[] mcmcAsk(String X, Hashtable<String, Boolean> evidence,
+			int numberOfVariables, Random r) {
+		double[] retval = new double[2];
+		List nonEvidenceVariables = nonEvidenceVariables(evidence, X);
+		Hashtable<String, Boolean> event = createRandomEvent(
+				nonEvidenceVariables, evidence, r);
+		for (int j = 0; j < numberOfVariables; j++) {
+			Iterator iter = nonEvidenceVariables.iterator();
+			while (iter.hasNext()) {
+				String variable = (String) iter.next();
+				BayesNetNode node = getNodeOf(variable);
+				List<BayesNetNode> markovBlanket = markovBlanket(node);
+				Hashtable mb = createMBValues(markovBlanket, event);
+				// event.put(node.getVariable(), node.isTrueFor(
+				// r.getProbability(), mb));
+				event.put(node.getVariable(), truthValue(rejectionSample(node
+						.getVariable(), mb, 100, r), r));
+				boolean queryValue = (event.get(X)).booleanValue();
+				if (queryValue) {
+					retval[0] += 1;
+				} else {
+					retval[1] += 1;
+				}
+			}
+		}
+		return Util.normalize(retval);
+	}
+
+	public double[] mcmcAsk(String X, Hashtable<String, Boolean> evidence,
+			int numberOfVariables) {
+		return mcmcAsk(X, evidence, numberOfVariables, new Random());
+	}
+
 	private List<BayesNetNode> markovBlanket(BayesNetNode node) {
 		return markovBlanket(node, new ArrayList<BayesNetNode>());
 	}
@@ -568,21 +616,7 @@ public class BayesNet {
 		return table;
 	}
 	 */
-	
-    public static Hashtable<String, Boolean> cloneEvidenceVariables(
-            Hashtable<String, Boolean> evidence) {
-    Hashtable<String, Boolean> cloned = new Hashtable<String, Boolean>();
-    Iterator<String> iter = evidence.keySet().iterator();
-    while (iter.hasNext()) {
-            String key = iter.next();
-            Boolean bool = evidence.get(key);
-            if (bool.equals(Boolean.TRUE)) {
-                    cloned.put(key, Boolean.TRUE);
-            } else if ((evidence.get(key)).equals(Boolean.FALSE)) {
-                    cloned.put(key, Boolean.FALSE);
-            }
-    }
-    return cloned;
-}
+
+
 
 }
