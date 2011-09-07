@@ -1,13 +1,12 @@
-/**
- * Created on Aug 24, 2003 by Ravi Mohan
- * modified by Stefano Bonetta
- */
 
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Varie metodi di utilità per la manipolazione di liste e normalizzazione.
+ */
 public class Util {
 	
         public static final String NO = "No";

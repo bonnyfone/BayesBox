@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Ravi Mohan
- * modified by Stefano Bonetta
+ * Classe che rappresenta una distribuzione di proabilità.
+ * <br><i>(alcune idee e parti del codice appartengono a Ravi Mohan - MIT)</i>
  */
 public class ProbabilityDistribution {
-	/** Righe della tabella della Probabilità congiunta */
+	
+	/** Righe della CPT */
 	private List<Row> rows = new ArrayList<Row>();
 	
 	/** Mappa <VariableName:DistributionIndex> */
@@ -36,12 +37,18 @@ public class ProbabilityDistribution {
 	public void set(double probability, boolean... values) {
 		if (values.length != variableNames.size()) {
 			throw new IllegalArgumentException(
-					"Invalid number of values ("+values.length+"), must = # of Random Variables in distribution:"
+					"Numero non valido di valori ("+values.length+"), deve essere = # di var casuali della distribuzione:"
 							+ variableNames.size());
 		}
 		rows.add(new Row(probability, values));
 	}
 
+	/**
+	 * Metodo che ritorna la probabilità dell'evento del nodo.
+	 * @param variableName id dell'evento
+	 * @param b valore aspettato
+	 * @return probabilità dell'evento
+	 */
 	public double probabilityOf(String variableName, boolean b) {
 		HashMap<String, Boolean> h = new HashMap<String, Boolean>();
 		h.put(variableName, b);
@@ -72,6 +79,12 @@ public class ProbabilityDistribution {
         return prob;
 }
 */
+
+	/**
+	 * Metodo che ritorna la probabilità della data configurazione
+	 * @param conditions configurazione degli eventi
+	 * @return probabilità dell'evento
+	 */
 	public double probabilityOf(Map<String, Boolean> conditions) {
 		double prob = -1.0;
 		boolean sentinel=true;
