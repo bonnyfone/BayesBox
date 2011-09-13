@@ -117,6 +117,7 @@ public class BayesNet {
 			} else {
 				Hashtable<String, Boolean> parentValues = new Hashtable<String, Boolean>();
 				for (BayesNetNode parent : parentNodes) {
+					//if(evidence.get(parent.getVariable())!=null)
 					parentValues.put(parent.getVariable(), evidence.get(parent.getVariable()));
 				}
 				double prob = y.probabilityOf(parentValues);
@@ -154,18 +155,18 @@ public class BayesNet {
 	 */
 	private double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence){
 		System.out.println("Calling enumerationAsk");
-		//predispongo l'alg a funzionare anche con un numero di stati > 2 ??
+		Hashtable<String, Boolean> evidence2 =  cloneEvidenceVariables(evidence);
+
 		BayesNetNode q = getNodeOf(X);
 		double[] ris = new double[q.getStateNames().length]; 
-
 
 		evidence.put(X, true);
 		ris[0] = enumerateAll(getVariables(),evidence);
 
-		evidence.put(X, false);
-		ris[1] = enumerateAll(getVariables(),evidence);
+		evidence2.put(X, false);
+		ris[1] = enumerateAll(getVariables(),evidence2);
 
-
+		System.out.println("senza normalizzare: "+ris[0]+ ", "+ris[1]);
 		return Util.normalize(ris);
 	}
 
@@ -177,6 +178,7 @@ public class BayesNet {
 		if(vars.size()==0)return 1.0;
 
 		String Y = Util.first(vars);
+		System.out.println("Calcolo "+Y + " su -> "+vars.toString());
 		double probOf;
 		if(evidence.get(Y) == null){ //non compariva nell'evidenza
 			//System.out.println("NON compariva nell'evidenza");
@@ -332,11 +334,52 @@ public class BayesNet {
 	}
 
 
-
 	/**
 	 * Ottiene una lista delle variabili della rete di bayes in un ordine tale da rispettare le dipendenze interne alla rete.
 	 */
 	private List<BayesNetNode> getVariableNodes(){
+		if(variableNodes != null)return variableNodes;
+		List<BayesNetNode> topologicalOrder = new ArrayList<BayesNetNode>();
+		List<BayesNetNode> remainingChilds = new ArrayList<BayesNetNode>();
+		List<BayesNetNode> tmpChild;
+		List<BayesNetNode> currentRoots;
+		
+		//Tutte le radici posso già inserirle
+		System.out.println("##> Computing topological order...");
+		currentRoots = roots;
+		while(currentRoots.size()>0){
+			System.out.println("current roots: "+currentRoots.toString());
+			//topologicalOrder.addAll(currentRoots);
+			
+			for(BayesNetNode n : currentRoots){
+				if(topologicalOrder.containsAll(n.getParents()))topologicalOrder.add(n);
+				tmpChild = n.getChildren();
+			
+				for(BayesNetNode c : tmpChild){
+				
+					if(topologicalOrder.containsAll(c.getParents())){
+						if(!topologicalOrder.contains(c)){
+							topologicalOrder.add(c);
+							for(BayesNetNode rc : c.getChildren())
+								if(!remainingChilds.contains(rc))remainingChilds.add(rc);
+						}
+					}
+					else if(!remainingChilds.contains(c))remainingChilds.add(c);
+					//else remainingChilds.add(c);
+				}
+			}
+			System.out.println("figli rimanenti "+remainingChilds.toString());
+			currentRoots = remainingChilds;
+			remainingChilds = new ArrayList<BayesNetNode>();
+		}
+		
+		    
+		variableNodes = topologicalOrder;
+		System.out.println("##> topological order: "+topologicalOrder.toString());
+		return topologicalOrder;
+	}
+
+	private List<BayesNetNode> getVariableNodes2(){
 		if(variableNodes != null)return variableNodes;
 
 		System.out.println("Calcolo LISTA con ordine consistente...");
@@ -361,7 +404,7 @@ public class BayesNet {
 			}
 		}
 
-		//------------PASSO 2
+		//------------PASSO 2  
 		while(rem.size()>0){
 			System.out.println("RIMANGONO: "+rem);
 			parents=rem;
@@ -381,9 +424,17 @@ public class BayesNet {
 				}
 			}
 		}
+
 		System.out.println("FATTO!");
-		variableNodes = newVariableNodes;
-		return newVariableNodes;
+		
+		
+		List<BayesNetNode> ris = new ArrayList<BayesNetNode>();
+		for(BayesNetNode s : newVariableNodes)
+			if(!ris.contains(s))ris.add(s);
+		
+		variableNodes = ris;
+		System.out.println("ORDINE :"+variableNodes.toString());
+		return ris; 
 	}
 
 	/*

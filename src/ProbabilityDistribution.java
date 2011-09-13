@@ -55,31 +55,32 @@ public class ProbabilityDistribution {
 		return probabilityOf(h);
 	}
 
-	/*
-	public double probabilityOf(Map<String, Boolean> conditions) {
-        double prob = 0.0;
-        for (Row row : rows) {
-                Iterator iter = conditions.keySet().iterator();
-                boolean rowMeetsAllConditions = true;
-                while (iter.hasNext()) {
-                        String variable = (String) iter.next();
-                        boolean value = ((Boolean) conditions.get(variable))
-                                        .booleanValue();
-                        if (!(row.matches(variable, value))) {
-                                rowMeetsAllConditions = false;
-                                break;
-                                // return false;
-                        }
-                }
-                if (rowMeetsAllConditions) {
-                        prob += row.probability;
-                }
-        }
+	
+//	public double probabilityOf(Map<String, Boolean> conditions) {
+//        double prob = 0.0;
+//        for (Row row : rows) {
+//                Iterator iter = conditions.keySet().iterator();
+//                boolean rowMeetsAllConditions = true;
+//                while (iter.hasNext()) {
+//                        String variable = (String) iter.next();
+//                        boolean value = ((Boolean) conditions.get(variable))
+//                                        .booleanValue();
+//                        if (!(row.matches(variable, value))) {
+//                                rowMeetsAllConditions = false;
+//                                break;
+//                                // return false;
+//                        }
+//                }
+//                if (rowMeetsAllConditions) {
+//                        prob += row.probability;
+//                }
+//        }
+//
+//        return prob;
+//}
 
-        return prob;
-}
-*/
-
+	
+	
 	/**
 	 * Metodo che ritorna la probabilità della data configurazione
 	 * @param conditions configurazione degli eventi
@@ -100,9 +101,12 @@ public class ProbabilityDistribution {
 			if (rowMeetsAllConditions) {
 				if(sentinel){ prob=0.0;sentinel=false; }
 				prob += row.probability;
+			}else{
+				//<-------- QUI pescare i casi in cui non rispetta TUTTE le condizioni
 			}
 		}
-
+		//if(prob==-1)System.out.println("prob = -1");
+		//System.out.println(conditions.toString()+" -> "+prob);
 		return prob;
 	}
 
