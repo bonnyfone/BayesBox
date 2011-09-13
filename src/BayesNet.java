@@ -352,7 +352,7 @@ public class BayesNet {
 			//topologicalOrder.addAll(currentRoots);
 			
 			for(BayesNetNode n : currentRoots){
-				if(topologicalOrder.containsAll(n.getParents()))topologicalOrder.add(n);
+				if(topologicalOrder.containsAll(n.getParents()) && !topologicalOrder.contains(n))topologicalOrder.add(n);
 				tmpChild = n.getChildren();
 			
 				for(BayesNetNode c : tmpChild){
