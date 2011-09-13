@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -302,37 +303,92 @@ public class BayesNet {
 	/**
 	 * Metodo interno per l'implementazione del Likelihood Weighting
 	 */
-	private double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples,	Random r) {
-		double[] retval = new double[2];
-		double tmpVal = 1.0;
-		List<BayesNetNode> variableNodes = getVariableNodes();
+//	private double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples,	Random r) {
+//		double[] retval = new double[2];
+//		double tmpVal = 1.0;
+//		List<BayesNetNode> variableNodes = getVariableNodes();
+//
+//		for (int i = 0; i < numberOfSamples; i++) {
+//			Hashtable<String, Boolean> x = new Hashtable<String, Boolean>();
+//			double w = 1.0;
+//
+//			for (BayesNetNode node : variableNodes) {
+//				if (evidence.get(node.getVariable()) != null) {//se ho evidenza per questa var
+//					Hashtable<String, Boolean> x2 = new Hashtable<String, Boolean>();
+//					//x2.put(node.getVariable(), evidence.get(node.getVariable()));
+//					for(BayesNetNode b : node.getParents()){
+//						if(evidence.get(b.getVariable())!= null)x2.put(b.getVariable(),evidence.get(b.getVariable()));
+//					}
+//
+//
+//					tmpVal = node.probabilityOf(x2);
+//					if(tmpVal!= -1.0)w *=tmpVal; 
+//					//w*=tmpVal;
+//					//System.out.println(w);
+//					//System.out.println("Evidentza trovata " +w);
+//					x.put(node.getVariable(), evidence.get(node.getVariable()));
+//				} else { //se non ho evidenza, simulo
+//					x.put(node.getVariable(), node.isTrueFor(r.nextDouble(), x));
+//				}
+//			}
+//			boolean queryValue = (x.get(X)).booleanValue();
+//			if (queryValue) {
+//				retval[0] += w;
+//			} else {
+//				retval[1] += w;
+//			}
+//		}
+//		return Util.normalize(retval);
+//	}
 
-		for (int i = 0; i < numberOfSamples; i++) {
-			Hashtable<String, Boolean> x = new Hashtable<String, Boolean>();
-			double w = 1.0;
+	
 
-			for (BayesNetNode node : variableNodes) {
-				if (evidence.get(node.getVariable()) != null) {//se ho evidenza per questa var
-					tmpVal = node.probabilityOf(x);
-					if(tmpVal!= -1.0)w *=tmpVal; 
-					//w*=tmpVal;
-					//System.out.println(tmpVal);
-					//System.out.println("Evidentza trovata " +w);
-					x.put(node.getVariable(), evidence.get(node.getVariable()));
-				} else { //se non ho evidenza, simulo
-					x.put(node.getVariable(), node.isTrueFor(r.nextDouble(), x));
-				}
-			}
-			boolean queryValue = (x.get(X)).booleanValue();
-			if (queryValue) {
-				retval[0] += w;
-			} else {
-				retval[1] += w;
-			}
-		}
-		return Util.normalize(retval);
-	}
+    public double[] likelihoodWeighting(String X, Hashtable<String, Boolean> evidence, int numberOfSamples, Random r) {
+            double[] retval = new double[2];
+            
+            for (int i = 0; i < numberOfSamples; i++) {
+                    Hashtable<String, Boolean> x = new Hashtable<String, Boolean>(); //il weighted sample
+                    Hashtable<String, Boolean> g;
+                    double w = 1.0;
+                    List<BayesNetNode> variableNodes = getVariableNodes();
+                    
+                    for (BayesNetNode node : variableNodes) {
+                            if (evidence.get(node.getVariable()) != null) { //aggiorno il peso
+                            	
+                            	x.put(node.getVariable(), evidence.get(node.getVariable()));    
+                            	g = new Hashtable<String, Boolean>();
+                            	for(BayesNetNode p : node.getParents()){
+//                            		if(evidence.get(p.getVariable())!=null){
+//                            			g.put(p.getVariable(), evidence.get(p.getVariable()));
+//                            		}
+//                            		else 
+                            		if(x.get(p.getVariable())!=null){
+                            			g.put(p.getVariable(), x.get(p.getVariable()));
+                            		}
+                            	}
+                            	
+                            	//System.out.println("per peso "+g.toString());
+                            	w *= node.probabilityOf(g); //.probabilityOf(x);
+                            	 
+                            	//System.out.println("Considero " + node.getVariable()+", evidenza trovata: "+x.toString()+" --> "+w);
+                                      
+                            } else { //simulo
+                                    x.put(node.getVariable(), node.isTrueFor(r.nextDouble(), x));
+                            }
+                    }
+                    boolean queryValue = (x.get(X)).booleanValue();
+                    //System.out.println("Weight "+i+" = "+w);
+                    if (queryValue) {
+                            retval[0] += w;
+                    } else {
+                            retval[1] += w;
+                    }
 
+            }
+            return Util.normalize(retval);
+    }
+
+	
 
 	/**
 	 * Ottiene una lista delle variabili della rete di bayes in un ordine tale da rispettare le dipendenze interne alla rete.

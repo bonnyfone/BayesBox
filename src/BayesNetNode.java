@@ -219,6 +219,8 @@ public class BayesNetNode {
                         return Boolean.FALSE;
                 }
         }
+        
+        
 
         /**
          * Stabilisce se il nodo è radice.

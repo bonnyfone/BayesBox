@@ -56,28 +56,28 @@ public class ProbabilityDistribution {
 	}
 
 	
-//	public double probabilityOf(Map<String, Boolean> conditions) {
-//        double prob = 0.0;
-//        for (Row row : rows) {
-//                Iterator iter = conditions.keySet().iterator();
-//                boolean rowMeetsAllConditions = true;
-//                while (iter.hasNext()) {
-//                        String variable = (String) iter.next();
-//                        boolean value = ((Boolean) conditions.get(variable))
-//                                        .booleanValue();
-//                        if (!(row.matches(variable, value))) {
-//                                rowMeetsAllConditions = false;
-//                                break;
-//                                // return false;
-//                        }
-//                }
-//                if (rowMeetsAllConditions) {
-//                        prob += row.probability;
-//                }
-//        }
-//
-//        return prob;
-//}
+	public double probabilityOf(Map<String, Boolean> conditions) {
+        double prob = 0.0;
+        for (Row row : rows) {
+                Iterator<String> iter = conditions.keySet().iterator();
+                boolean rowMeetsAllConditions = true;
+                while (iter.hasNext()) {
+                        String variable = (String) iter.next();
+                        boolean value = ((Boolean) conditions.get(variable))
+                                        .booleanValue();
+                        if (!(row.matches(variable, value))) {
+                                rowMeetsAllConditions = false;
+                                break;
+                                // return false;
+                        }
+                }
+                if (rowMeetsAllConditions) {
+                        prob += row.probability;
+                }
+        }
+
+        return prob;
+}
 
 	
 	
@@ -86,29 +86,29 @@ public class ProbabilityDistribution {
 	 * @param conditions configurazione degli eventi
 	 * @return probabilità dell'evento
 	 */
-	public double probabilityOf(Map<String, Boolean> conditions) {
-		double prob = -1.0;
-		boolean sentinel=true;
-		for (Row row : rows) {
-			boolean rowMeetsAllConditions = true;
-			if(conditions==null)System.out.println("conditions null");
-			for (Map.Entry<String, Boolean> c : conditions.entrySet()) {
-				if (!(row.matches(c.getKey(), c.getValue()))) {
-					rowMeetsAllConditions = false;
-					break;
-				}
-			}
-			if (rowMeetsAllConditions) {
-				if(sentinel){ prob=0.0;sentinel=false; }
-				prob += row.probability;
-			}else{
-				//<-------- QUI pescare i casi in cui non rispetta TUTTE le condizioni
-			}
-		}
-		//if(prob==-1)System.out.println("prob = -1");
-		//System.out.println(conditions.toString()+" -> "+prob);
-		return prob;
-	}
+//	public double probabilityOf(Map<String, Boolean> conditions) {
+//		double prob = -1.0;
+//		boolean sentinel=true;
+//		for (Row row : rows) {
+//			boolean rowMeetsAllConditions = true;
+//			if(conditions==null)System.out.println("conditions null");
+//			for (Map.Entry<String, Boolean> c : conditions.entrySet()) {
+//				if (!(row.matches(c.getKey(), c.getValue()))) {
+//					rowMeetsAllConditions = false;
+//					break;
+//				}
+//			}
+//			if (rowMeetsAllConditions) {
+//				if(sentinel){ prob=0.0;sentinel=false; }
+//				prob += row.probability;
+//			}else{
+//				//<-------- QUI pescare i casi in cui non rispetta TUTTE le condizioni
+//			}
+//		}
+//		//if(prob==-1)System.out.println("prob = -1");
+//		//System.out.println(conditions.toString()+" -> "+prob);
+//		return prob;
+//	}
 
 	@Override
 	public String toString() {
