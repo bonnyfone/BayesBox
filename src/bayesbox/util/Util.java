@@ -1,3 +1,5 @@
+package bayesbox.util;
+
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -14,7 +16,7 @@ public class Util {
         public static final String YES = "Yes";
 
         private static Random r = new Random();
-
+ 
         /**
          * Ritorna la testa di una lista
          * @param <T> tipo

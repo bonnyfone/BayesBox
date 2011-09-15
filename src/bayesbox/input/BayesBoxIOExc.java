@@ -1,3 +1,4 @@
+package bayesbox.input;
 /**
  * Classe che rappresente le eccezioni che possono accadere durante la manipolazione ed il calcolo di reti di Bayes. 
  */

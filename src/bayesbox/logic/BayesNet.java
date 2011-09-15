@@ -1,8 +1,13 @@
+package bayesbox.logic;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+
+import bayesbox.input.BayesBoxIOExc;
+import bayesbox.util.Util;
 
 /**
  * Classe che rappresenta una rete di Bayes.
@@ -178,7 +183,7 @@ public class BayesNet {
 		if(vars.size()==0)return 1.0;
 
 		String Y = Util.first(vars);
-		System.out.println("Calcolo "+Y + " su -> "+vars.toString());
+		//System.out.println("Calcolo "+Y + " su -> "+vars.toString());
 		double probOf;
 		if(evidence.get(Y) == null){ //non compariva nell'evidenza
 			//System.out.println("NON compariva nell'evidenza");
