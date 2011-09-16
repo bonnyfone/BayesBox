@@ -11,7 +11,7 @@
 <p style="text-align: center; font-style: italic;
 normal;"> Stefano Bonetta - progetto per il corso di Intelligenza Artificiale A.A. 2010/2011 </p> 
 <br><h2> Introduzione </h2> 
-Scopo del progetto e' la realizzazione di una libreria JAVA per la manipolazione di <b>reti di Bayes</b> su eventi binari che permetta di effettuare operazioni di <b>inferenza</b> attraverso metodi esatti o tramite tecniche di simulazione stocastica.<br>
+Scopo del progetto e' la realizzazione di una libreria JAVA per la manipolazione di <b>reti di Bayes</b> che permetta di effettuare operazioni di <b>inferenza</b> attraverso metodi esatti o tramite tecniche di simulazione stocastica.<br>
 La libreria fornisce inoltre la possibilita' di importare ed utilizzare delle reti di bayes in formato XML, come quelle realizzate tramite il 
 programma grafico <a href='http://www.snn.ru.nl/nijmegen/index.php?option=com_content&view=article&id=89&Itemid=212'>BayesBuilder</a>.
 
@@ -104,12 +104,36 @@ import bayesbox.logic.BayesNetNode;<br>
 </p></td><td><center> </td></tr></table>
 
 <br><h3>Alcune note di utilizzo importanti</h3>
-In caso di errori la libreria solleva delle particolari eccezioni (BayesBoxIOExc) che spiegano la tipologia di problema, a partire da errori 
-di lettura dei file XML fino al passaggio di variabili di evidenza sconosciute ai metodi di inferenza. <br>E' possibile monitorare lo stato delle 
-operazioni che la libreria sta eseguento attivando la modalita' verbose, che inviera' dei log in tempo reale sulla shell; diversamente la libreria 
-lavorera' in modalita' silente (per attivare la modalita' verbosa: <code>BayesBox.setVerboseMode(true)</code> ).
+<ul>
 
-<br><h3>Note implementative</h3>................
+<li>In caso di errori la libreria solleva delle particolari eccezioni (BayesBoxIOExc) che spiegano la tipologia di problema, a partire da errori 
+di lettura dei file XML fino al passaggio di variabili di evidenza sconosciute ai metodi di inferenza.</li> 
+<li>E' possibile monitorare lo stato delle 
+operazioni che la libreria sta eseguento attivando la modalita' verbose, che inviera' dei log in tempo reale sulla shell; diversamente la libreria 
+lavorera' in modalita' silente (per attivare la modalita' verbosa: <code>BayesBox.setVerboseMode(true)</code> ).</li>
+<li>Per costruire dell'<i>evidenza</i> da passare ai metodi di inferenza e' sufficiente creare una Hashtable del tipo <i>variabile->valore booleano</i>
+ che rappresenta lo stato delle variabili di evidenza. Ad esempio: <table border=0>
+<tr><td width='50%'>
+<p style="padding: 5px; background-color: #FEFF90; margin-left : 2em; color : blue;">
+<code>
+...<br>
+...<br>
+		<font color='green'>//Creo l'hashtable </font><br>
+		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();<br>
+		evidence.put("event 1", true);<br>
+		evidence.put("event 2", true);<br><br>
+		
+		<font color='green'>//calcolo inferenza esatta tramite metodo di enumerazione con evidenza</font><br>
+		double ris[] = bn.enumerationAsk("child", evidence, BayesNet.MODE_ID);<br>
+...<br>
+...<br>
+</code>
+</p></td><td><center> </td></tr></table>
+
+
+</ul>
+
+<br><h3>Dettagli implementativi</h3>................
   
 <br><h3>Documentazione</h3>
 La documentazione dettagliata della libreria e' disponibile in formato JavaDoc (<a href='javadoc/index.html'>BayesBox Documentation</a>).
@@ -141,5 +165,21 @@ una scala logaritmica per rappresentare i risultati. NB: l'enumerazione ha impie
 <img src='images/test2.png'>
 <br><br>Sono stati fatti dei test anche su reti di dimensioni maggiori (3SAT con 55 nodi), dove l'algoritmo di Enumerazione non e' riuscito a portare 
 a termine il calcolo nemmeno dopo 7 ore di computazione. Gli algoritmi di inferenza stocastica invece permettono di arrivare sempre ad un risultato in un tempo accettabile e con una precisione modulabile tramite il numero di campioni utilizzati.
+
+<br><br><h2>Consuntivo </h2>
+<table border=1>
+<tr><th>Attivita'</th><th>Ore</th></tr>
+<tr><td>Raccolta informazioni</td><td align='right'>4</td>
+<tr><td>Progettazione</td><td align='right'>6</td>
+<tr><td>Implementazione</td><td align='right'>17</td>
+<tr><td>Verifica e testing</td><td align='right'>7</td>
+<tr><td align='right'><b>totale</b></td><td align='right'><b>34</b></td></tr></table>
+
+<br><h2>Riferimenti </h2>
+
+<ul><li><a href='http://code.google.com/p/aima-java/'>AIMA Code</a> Java implementation of algorithms from Norvig And Russell's "Artificial Intelligence - A Modern Approach 3rd Edition."</li>
+<li>Lucidi del corso di Intelligenza Artificiale, <a href='http://www.math.unipd.it/~sperduti/AI11/incertezza.pdf'>gestione dell'Incertezza</a></li>
+</ul><br>
+
 </body>
 </html>
