@@ -6,9 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import bayesbox.input.BayesBox;
 import bayesbox.input.BayesBoxIOExc;
 import bayesbox.util.Util;
 
+
+
+
+ 
 /**
  * Classe che rappresenta una rete di Bayes.
  * Contiente metodi per la manipolazione e l'inferenza.
@@ -88,7 +93,7 @@ public class BayesNet {
 		for(BayesNetNode n : variableNodes){
 			if(evidence.get(n.getDescription()) != null){
 				ris.put(n.getVariable(),evidence.get(n.getDescription()));
-				//System.out.println(n.getVariable()+evidence.get(n.getDescription())+"");
+				//BayesBox.LOG(n.getVariable()+evidence.get(n.getDescription())+"");
 			}
 		}
 		if(ris.size()!=evidence.size())throw new BayesBoxIOExc("La descrizione di una delle variabili non corrisponde a nessuna variabile.");
@@ -148,7 +153,7 @@ public class BayesNet {
 	 */
 	public double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence, int queryMode) throws BayesBoxIOExc{
 		if(queryMode == MODE_ID){
-			System.out.println("MODE_ID");
+			BayesBox.LOG("MODE_ID");
 			return enumerationAsk(X, evidence);
 		}
 		else // (queryMode == MODE_DESCRIPTION)
@@ -159,7 +164,7 @@ public class BayesNet {
 	 * Funzione interna che si occupa di eseguire effettivamente l'enumerazione.
 	 */
 	private double[] enumerationAsk(String X, Hashtable<String, Boolean> evidence){
-		System.out.println("Calling enumerationAsk");
+		BayesBox.LOG("Calling enumerationAsk");
 		Hashtable<String, Boolean> evidence2 =  cloneEvidenceVariables(evidence);
 
 		BayesNetNode q = getNodeOf(X);
@@ -171,7 +176,7 @@ public class BayesNet {
 		evidence2.put(X, false);
 		ris[1] = enumerateAll(getVariables(),evidence2);
 
-		System.out.println("senza normalizzare: "+ris[0]+ ", "+ris[1]);
+		BayesBox.LOG("senza normalizzare: "+ris[0]+ ", "+ris[1]);
 		return Util.normalize(ris);
 	}
 
@@ -179,14 +184,14 @@ public class BayesNet {
 	 * Metodo interno per l'enumerazione ricorsiva.
 	 */
 	private double enumerateAll(List<String> vars,Hashtable<String, Boolean> evidence){
-		//System.out.println("call enumerateALL with " + vars.size() + "vars"); 
+		//BayesBox.LOG("call enumerateALL with " + vars.size() + "vars"); 
 		if(vars.size()==0)return 1.0;
 
 		String Y = Util.first(vars);
-		//System.out.println("Calcolo "+Y + " su -> "+vars.toString());
+		//BayesBox.LOG("Calcolo "+Y + " su -> "+vars.toString());
 		double probOf;
 		if(evidence.get(Y) == null){ //non compariva nell'evidenza
-			//System.out.println("NON compariva nell'evidenza");
+			//BayesBox.LOG("NON compariva nell'evidenza");
 			double tmpRis=0.0;
 
 
@@ -196,16 +201,16 @@ public class BayesNet {
 				newEvidence.put(Y, value);
 
 				probOf = probabilityOf(Y, value, newEvidence);// getNodeOf(Y).getDistribution().probabilityOf(Y, value);
-				//System.out.println("prob posteriori:" +probOf);
+				//BayesBox.LOG("prob posteriori:" +probOf);
 				tmpRis +=  probOf * enumerateAll(Util.rest(vars), newEvidence);
 				value=!value;  
 			} 
-			//System.out.println("tmpRis: +"+tmpRis);
+			//BayesBox.LOG("tmpRis: +"+tmpRis);
 			return tmpRis;
 		}else{//compariva nell'evidenza 
-			//System.out.println("compariva nell'evidenza");
+			//BayesBox.LOG("compariva nell'evidenza");
 			probOf = probabilityOf(Y, (Boolean)evidence.get(Y), evidence);//getNodeOf(Y).getDistribution().probabilityOf(Y, (Boolean)evidence.get(Y));
-			//System.out.println("prob posteriori:" +probOf);
+			//BayesBox.LOG("prob posteriori:" +probOf);
 			return  probOf * enumerateAll(Util.rest(vars), evidence);
 		}
 
@@ -291,7 +296,7 @@ public class BayesNet {
 				}
 			}
 		}
-		//System.out.println(retval[0] + " - " +retval[1]);
+		//BayesBox.LOG(retval[0] + " - " +retval[1]);
 		retval = Util.normalize(retval); //normalizzo il risultato
 
 		//preparo il risultato
@@ -328,8 +333,8 @@ public class BayesNet {
 //					tmpVal = node.probabilityOf(x2);
 //					if(tmpVal!= -1.0)w *=tmpVal; 
 //					//w*=tmpVal;
-//					//System.out.println(w);
-//					//System.out.println("Evidentza trovata " +w);
+//					//BayesBox.LOG(w);
+//					//BayesBox.LOG("Evidentza trovata " +w);
 //					x.put(node.getVariable(), evidence.get(node.getVariable()));
 //				} else { //se non ho evidenza, simulo
 //					x.put(node.getVariable(), node.isTrueFor(r.nextDouble(), x));
@@ -371,17 +376,17 @@ public class BayesNet {
                             		}
                             	}
                             	
-                            	//System.out.println("per peso "+g.toString());
+                            	//BayesBox.LOG("per peso "+g.toString());
                             	w *= node.probabilityOf(g); //.probabilityOf(x);
                             	 
-                            	//System.out.println("Considero " + node.getVariable()+", evidenza trovata: "+x.toString()+" --> "+w);
+                            	//BayesBox.LOG("Considero " + node.getVariable()+", evidenza trovata: "+x.toString()+" --> "+w);
                                       
                             } else { //simulo
                                     x.put(node.getVariable(), node.isTrueFor(r.nextDouble(), x));
                             }
                     }
                     boolean queryValue = (x.get(X)).booleanValue();
-                    //System.out.println("Weight "+i+" = "+w);
+                    //BayesBox.LOG("Weight "+i+" = "+w);
                     if (queryValue) {
                             retval[0] += w;
                     } else {
@@ -405,10 +410,10 @@ public class BayesNet {
 		List<BayesNetNode> currentRoots;
 		
 		//Tutte le radici posso già inserirle
-		System.out.println("##> Computing topological order...");
+		BayesBox.LOG("##> Computing topological order...");
 		currentRoots = roots;
 		while(currentRoots.size()>0){
-			System.out.println("current roots: "+currentRoots.toString());
+			BayesBox.LOG("current roots: "+currentRoots.toString());
 			//topologicalOrder.addAll(currentRoots);
 			
 			for(BayesNetNode n : currentRoots){
@@ -428,21 +433,21 @@ public class BayesNet {
 					//else remainingChilds.add(c);
 				}
 			}
-			System.out.println("figli rimanenti "+remainingChilds.toString());
+			BayesBox.LOG("figli rimanenti "+remainingChilds.toString());
 			currentRoots = remainingChilds;
 			remainingChilds = new ArrayList<BayesNetNode>();
 		}
 		
 		    
 		variableNodes = topologicalOrder;
-		System.out.println("##> topological order: "+topologicalOrder.toString());
+		BayesBox.LOG("##> topological order: "+topologicalOrder.toString());
 		return topologicalOrder;
 	}
 
 	private List<BayesNetNode> getVariableNodes2(){
 		if(variableNodes != null)return variableNodes;
 
-		System.out.println("Calcolo LISTA con ordine consistente...");
+		BayesBox.LOG("Calcolo LISTA con ordine consistente...");
 		List<BayesNetNode> parents = roots;
 		List<BayesNetNode> newVariableNodes = new ArrayList<BayesNetNode>();
 		List<BayesNetNode> rem = new ArrayList<BayesNetNode>();
@@ -466,7 +471,7 @@ public class BayesNet {
 
 		//------------PASSO 2  
 		while(rem.size()>0){
-			System.out.println("RIMANGONO: "+rem);
+			BayesBox.LOG("RIMANGONO: "+rem);
 			parents=rem;
 			rem = new ArrayList<BayesNetNode>();
 			for(BayesNetNode iterParents : parents){
@@ -485,7 +490,7 @@ public class BayesNet {
 			}
 		}
 
-		System.out.println("FATTO!");
+		BayesBox.LOG("FATTO!");
 		
 		
 		List<BayesNetNode> ris = new ArrayList<BayesNetNode>();
@@ -493,7 +498,7 @@ public class BayesNet {
 			if(!ris.contains(s))ris.add(s);
 		
 		variableNodes = ris;
-		System.out.println("ORDINE :"+variableNodes.toString());
+		BayesBox.LOG("ORDINE :"+variableNodes.toString());
 		return ris; 
 	}
 

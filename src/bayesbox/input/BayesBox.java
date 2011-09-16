@@ -1,5 +1,7 @@
 package bayesbox.input;
 
+
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +20,8 @@ import bayesbox.logic.BayesNet;
 import bayesbox.logic.BayesNetNode;
 import bayesbox.util.Util;
 
+
+ 
 /**
  * Classe che rappresenta il loader per reti di bayes caricate da file XML.
  */
@@ -28,7 +32,18 @@ public class BayesBox {
 
 	/** Costruttore base */
 	public BayesBox(){}
+	
+	/** modalita' verbosa */
+	private static boolean VERBOSE=false;
+	
+	/** imposta la modalita di log */
+	public static void setVerbose(boolean verbose){
+		VERBOSE = verbose;
+	}
 
+	public static void LOG(String msg){
+		if(VERBOSE)System.out.println(msg);
+	}
 	
 	/**
 	 * Costruttore che crea rete di bayes da file XML.
@@ -103,7 +118,7 @@ public class BayesBox {
 					}
 				}
 				//DEBUG
-				System.out.println("NODE name: " + tmpNode.getVariable()       + "\n" +
+				BayesBox.LOG("NODE name: " + tmpNode.getVariable()       + "\n" +
 								   "     desc: " + tmpNode.getDescription()    + "\n" +
 								   "     val1: " + tmpNode.getStateNames()[0]  + "\n" +
 								   "     val2: " + tmpNode.getStateNames()[1]  + "\n" );
@@ -133,7 +148,7 @@ public class BayesBox {
 					String val = child.item(i).getNodeName();
 					if(val.equals("PRIVATE")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
 						currentNode = getBayesNetNodeById(tmpNodes, child.item(i).getAttributes().getNamedItem("NAME").getTextContent()+"");
-						System.out.println("Node find: "+child.item(i).getAttributes().getNamedItem("NAME").getTextContent()+" alias " +currentNode.getDescription());
+						BayesBox.LOG("Node find: "+child.item(i).getAttributes().getNamedItem("NAME").getTextContent()+" alias " +currentNode.getDescription());
 					}
 					else if(val.equals("CONDSET")){
 						NodeList subchild = child.item(i).getChildNodes();
@@ -142,7 +157,7 @@ public class BayesBox {
 							
 							if(subval.equals("CONDELEM")){ //l'identificativo del nodo di cui stiamo per leggere le dipendenze
 								dependingNodes.add(getBayesNetNodeById(tmpNodes, subchild.item(j).getAttributes().getNamedItem("NAME").getTextContent()+""));
-								System.out.println("DependingNode find: "+subchild.item(j).getAttributes().getNamedItem("NAME").getTextContent()+" alias "+dependingNodes.get(dependingNodes.size()-1).getDescription());
+								BayesBox.LOG("DependingNode find: "+subchild.item(j).getAttributes().getNamedItem("NAME").getTextContent()+" alias "+dependingNodes.get(dependingNodes.size()-1).getDescription());
 							}
 						}
 					}
@@ -158,7 +173,7 @@ public class BayesBox {
 								tmpVal = (subchild.item(j).getTextContent()+"").trim();
 								tmpVal = (tmpVal.subSequence(0,tmpVal.indexOf(" "))).toString().trim();
 								smartValue.add(tmpVal);
-								//System.out.println("Value found: "+tmpVal);
+								//BayesBox.LOG("Value found: "+tmpVal);
 								if(subchild.item(j).getAttributes().getNamedItem("INDEXES").getTextContent().equals("")){
 									isRootNode=true;
 								}
@@ -173,7 +188,7 @@ public class BayesBox {
 					currentNode.influencedBy(dependingNodes);
 					inflateDistribution(currentNode,smartValue);
 				}
-				System.out.println("Distribution:\n"+currentNode.getDistributionInfo());
+				BayesBox.LOG("Distribution:\n"+currentNode.getDistributionInfo());
 			}
 			
 		}  
@@ -210,7 +225,7 @@ public class BayesBox {
 		int targetBin = size-1-pos;
 		String conf = Integer.toBinaryString(targetBin);
 		while(conf.length()<dim)conf = "0"+conf;
-		//System.out.println("Binario: "+conf);
+		//BayesBox.LOG("Binario: "+conf);
 		for(int i=0;i<ris.length;i++){
 			if(conf.charAt(i) == '0')
 				ris[i] = false;
@@ -243,8 +258,8 @@ public class BayesBox {
 		BayesBox bay = new BayesBox("/home/ziby/Scrivania/test_bayes/asia.xml");
 		BayesNet net = bay.getBayesNet();
 		
-		//System.out.println(net.getPriorSample());
-		//System.out.println(net.getVariables().toString());
+		//BayesBox.LOG(net.getPriorSample());
+		//BayesBox.LOG(net.getVariables().toString());
 
 		Hashtable<String, Boolean> evidence = new Hashtable<String, Boolean>();
 //		String var = "label1";
@@ -272,8 +287,8 @@ public class BayesBox {
 		Hashtable< String, Boolean> evidence3=BayesNet.cloneEvidenceVariables(evidence);
 		  
 		//TEST di enumerationAsk  ********************************************************************************
-		System.out.println("\n---------------------");
-		System.out.println(">>>> Enumeration Ask");
+		BayesBox.LOG("\n---------------------");
+		BayesBox.LOG(">>>> Enumeration Ask");
 		long endTime,startTime;
 		startTime = System.currentTimeMillis();
 		//double[] ris =net.enumerationAsk(var, evidence);
@@ -281,10 +296,10 @@ public class BayesBox {
 		try {
 			ris = net.enumerationAsk(var, evidence,BayesNet.MODE_DESCRIPTION);
 			endTime = System.currentTimeMillis();
-	 		System.out.println(ris[0]+" , " + ris[1] );	
-			 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+	 		BayesBox.LOG(ris[0]+" , " + ris[1] );	
+			 BayesBox.LOG("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
 		} catch (BayesBoxIOExc e) {
-			System.out.println(e.getError());
+			BayesBox.LOG(e.getError());
 		
 		}
 
@@ -292,38 +307,38 @@ public class BayesBox {
 		 
 		 
 		//TEST di LIKELIHOODWEIGHTING *****************************************************************************
- 		System.out.println(">>>> Likelihood");
+ 		BayesBox.LOG(">>>> Likelihood");
  		startTime = System.currentTimeMillis();
  		
  		double[] ris2;
 		try {
 			ris2 = net.likelihoodWeighting(var, evidence2, 1700, BayesNet.MODE_DESCRIPTION);
 			endTime = System.currentTimeMillis();
-			System.out.println(ris2[0]+" , " + ris2[1] );
-			 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+			BayesBox.LOG(ris2[0]+" , " + ris2[1] );
+			 BayesBox.LOG("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
 		} catch (BayesBoxIOExc e) {
-			System.out.println(e.getError());
+			BayesBox.LOG(e.getError());
 		}
 		
 		  
 		//TEST di REJECTIONSAMPLING		 
-		System.out.println(">>>> Rejectionsampling");
+		BayesBox.LOG(">>>> Rejectionsampling");
 	 	startTime = System.currentTimeMillis();
 	 	double[] ris3;
 		try {
 			ris3 = net.rejectionSample(var, evidence3, 5000, BayesNet.MODE_DESCRIPTION);
 			endTime = System.currentTimeMillis();
-			System.out.println(ris3[0]+" , " + ris3[1] + " (campioni consistenti: "+(int)ris3[2]+", "+ris3[3]+"%)");
-			 System.out.println("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
+			BayesBox.LOG(ris3[0]+" , " + ris3[1] + " (campioni consistenti: "+(int)ris3[2]+", "+ris3[3]+"%)");
+			 BayesBox.LOG("Total elapsed time: "+ (endTime-startTime)+"\n---------------------");
 		} catch (BayesBoxIOExc e) {
 			// TODO Auto-generated catch block
-			System.out.println(e.getError());
+			BayesBox.LOG(e.getError());
 		}
 
 			  		 
 //		//TEST di REJECTIONSAMPLING
 //		double[] ris2 = net.rejectionSample("id1", evidence, 100);
-//		System.out.println(ris2[0]+" , " + ris2[1] + " (campioni consistenti: "+(int)ris2[2]+", "+ris2[3]+"%)");
+//		BayesBox.LOG(ris2[0]+" , " + ris2[1] + " (campioni consistenti: "+(int)ris2[2]+", "+ris2[3]+"%)");
 
 //		boolean i = true;
 //		int c =0;
@@ -332,14 +347,14 @@ public class BayesBox {
 //			Hashtable a = net.getPriorSample();
 //			if(a.get("id0")==Boolean.FALSE && a.get("id1")==Boolean.TRUE){
 //				i=false;
-//				System.out.println("Campione generato: "+net.getComprensiveResult(a).toString());
-//				System.out.println("Giri: "+c);
+//				BayesBox.LOG("Campione generato: "+net.getComprensiveResult(a).toString());
+//				BayesBox.LOG("Giri: "+c);
 //			}
 //			
 //			c++;
 //		}
 		
-		//System.out.println("Campione generato: "+net.getComprensiveResult(net.getPriorSample()).toString());
+		//BayesBox.LOG("Campione generato: "+net.getComprensiveResult(net.getPriorSample()).toString());
 		
 		
 		//net.rejectionSample(X, evidence, numberOfSamples)

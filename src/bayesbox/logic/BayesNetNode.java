@@ -1,8 +1,11 @@
 package bayesbox.logic;
+
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /** Classe che rappresenta un nodo della rete Bayesiana.
   * <br><i>(alcune idee e parti del codice appartengono a Ravi Mohan - MIT)</i>
@@ -203,7 +206,7 @@ public class BayesNetNode {
         public Boolean isTrueFor(double probability, Map<String, Boolean> modelBuiltUpSoFar) {
                 HashMap<String, Boolean> conditions = new HashMap<String, Boolean>();
                 if (isRoot()) {
-                		//System.out.println(getVariable() + " is root!");
+                		//BayesBox.LOG(getVariable() + " is root!");
                         conditions.put(getVariable(), Boolean.TRUE);
                 } else {
             
@@ -213,7 +216,7 @@ public class BayesNetNode {
                         }
                 }
                 double trueProbability = probabilityOf(conditions);
-                //System.out.println("Probability: "+probability + " - TrueProb: "+trueProbability);
+                //BayesBox.LOG("Probability: "+probability + " - TrueProb: "+trueProbability);
                 if (probability <= trueProbability) {
                         return Boolean.TRUE;
                 } else {

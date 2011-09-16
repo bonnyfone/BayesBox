@@ -1,6 +1,7 @@
 package bayesbox.util;
 
 
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -31,7 +32,7 @@ public class Util {
                 }
                 return newList.get(0);
         }
-
+ 
         /**
          * Ritorna la coda di una lista
          * @param <T> tipo
@@ -205,8 +206,8 @@ public class Util {
                 }
                 return accum;
         }
-
-
+ 
+ 
         /**
          * Replica una stringa n volte
          * @param s stringa da ripetere

@@ -1,4 +1,5 @@
 package bayesbox.logic;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -91,7 +92,7 @@ public class ProbabilityDistribution {
 //		boolean sentinel=true;
 //		for (Row row : rows) {
 //			boolean rowMeetsAllConditions = true;
-//			if(conditions==null)System.out.println("conditions null");
+//			if(conditions==null)BayesBox.LOG("conditions null");
 //			for (Map.Entry<String, Boolean> c : conditions.entrySet()) {
 //				if (!(row.matches(c.getKey(), c.getValue()))) {
 //					rowMeetsAllConditions = false;
@@ -105,8 +106,8 @@ public class ProbabilityDistribution {
 //				//<-------- QUI pescare i casi in cui non rispetta TUTTE le condizioni
 //			}
 //		}
-//		//if(prob==-1)System.out.println("prob = -1");
-//		//System.out.println(conditions.toString()+" -> "+prob);
+//		//if(prob==-1)BayesBox.LOG("prob = -1");
+//		//BayesBox.LOG(conditions.toString()+" -> "+prob);
 //		return prob;
 //	}
 
