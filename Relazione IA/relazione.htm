@@ -114,9 +114,10 @@ lavorera' in modalita' silente (per attivare la modalita' verbosa: <code>BayesBo
 <br><h3>Documentazione</h3>
 La documentazione dettagliata della libreria e' disponibile in formato JavaDoc (<a href='javadoc/index.html'>BayesBox Documentation</a>).
   
-<br><br><h2>Test</h2>
+<br><br><h2>Testing</h2>
 La fase di testing si e' incentrata sulla verifica della correttezza dei risultati dell'inferenza e sulla convergenza dei metodi stocastici. 
-Nel dattaglio sono state analizzate le prestazioni di tutti i metodi su diverse tipologie di reti (ad esempio: polytree e 3SAT). Come vedremo, i risultati ottenuti rispecchiano le proprieta' teoriche delle reti bayesiane.
+Nel dattaglio sono state analizzate le prestazioni di tutti i metodi su diverse tipologie di reti (ad esempio: polytree e 3SAT). Come vedremo, i risultati ottenuti rispecchiano le proprieta' teoriche delle reti bayesiane. Tutti i test sono stati eseguiti su una macchina operante con 
+Ubuntu 9.10 a 64 bit - 2GB RAM - processore AMD Turion64 X2 a 2Ghz.
 
 <br><br><h3>Convergenza di Rejection Sampling e Likelihood Weighting</h3>
 Per quanto riguarda le tecniche di inferenza tramite simulazione stocastica si e' verificato che sia l'algoritmo <b>Rejection Sampling</b> sia 
@@ -127,15 +128,15 @@ n-campioni e' stato eseguito 100 volte, pertanto il valore dell'errore rilevato 
 <br>Come si puo' vedere dai due grafi, nel caso in cui sia presente dell'evidenza l'algoritmo Likelihood Weighting converge piu' velocemente al valore 
 esatto. In assenza di evidenza, i due algoritmi sono sostanzialmente identici.
 
-<br><br><h3>Prestazioni</h3>
+<br><br><h3>Prestazioni degli algoritmi</h3>
 Sono stati messi a confronto i tre algoritmi per verificarne le prestazioni su varie tipologie di reti.
-Utilizzando una rete polytree si e' visto come l'algoritmo di Enumerazione riesca a dare risultati esatti in tempo competitivo rispetto agli algoritmi di inferenza approssimata che sono stati eseguiti usando 1000 campioni:<br>
+Utilizzando una rete <b>polytree</b> si e' visto come l'algoritmo di Enumerazione riesca a dare risultati esatti in tempo competitivo rispetto agli algoritmi di inferenza approssimata che sono stati eseguiti usando 1000 campioni:<br>
 <img src='images/test3.png'>
-<br><br><br>Considerando invece delle reti di tipo 3SAT, l'algoritmo di Enumerazione risente della struttura connessa della rete nel dare in tempo rapido i risultati mentre i metodi 
+<br><br><br>Considerando invece delle reti di tipo <b>3SAT</b>, l'algoritmo di Enumerazione risente della struttura connessa della rete mentre i metodi 
 stocastici non sembrano accusare l'incremento di complessita'. Ad ogni modo, essendo eseguiti sempre con un insieme di 1000 campioni, gli algoritmi 
 approssimati commettono un errore maggiore, che puo' essere attenuato aumentando il numero di campioni:<br><br>
 <img src='images/test1.png'>
-<br><br><br>L'algoritmo di Enumerazione degrada esponenzialmente in presenza di reti di media grandezza di tipo 3SAT, tant'e' che si rende necessaria 
+<br><br><br>L'algoritmo di Enumerazione degrada <b>esponenzialmente</b> in presenza di reti di media grandezza di tipo 3SAT, tant'e' che si rende necessaria 
 una scala logaritmica per rappresentare i risultati. NB: l'enumerazione ha impiegato circa 10 minuti per terminare!<br><br>
 <img src='images/test2.png'>
 <br><br>Sono stati fatti dei test anche su reti di dimensioni maggiori (3SAT con 55 nodi), dove l'algoritmo di Enumerazione non e' riuscito a portare 
