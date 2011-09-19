@@ -133,7 +133,15 @@ lavorera' in modalita' silente (per attivare la modalita' verbosa: <code>BayesBo
 
 </ul>
 
-<br><h3>Dettagli implementativi</h3>................
+<br><h3>Dettagli implementativi</h3>
+L'implementazione degli algoritmi si e' basata sugli pseudo-codici disponibili nel libro di testo "Artificial Intelligence - A Modern Approach 3rd
+ Edition", pertanto risultano essere delle implementazioni naive sicuramente ottimizzabili. Per quanto riguarda le strutture dati, sono state
+ utilizzate per la maggior parte delle Hashtable per la gestione delle tabelle di probabilita' e dell'evidenza delle query. La scelta e' ricaduta su 
+questa tipologia di struttura dati in quanto garantisce un accesso ai dati di tipo associativo molto veloce e dimensione variabile di memoria. 
+Inizialmente si e' valutato l'utilizzo di una libreria matematica per la gestione di numeri in virgola mobile ad alta precisione 
+(<a href='http://www.apfloat.org/apfloat_java/'>APfloat</a>) in modo da evitare problemi di arrotondamento per numeri molto vicini allo zero (problema 
+plausibile in quanto si vanno a manipolare probabilita'), ma si e' visto che il tipo <i>double</i> di Java riusciva a gestire abbastanza bene i conti,
+pertanto si e' preferito investire diversamente il tempo disponibile.
   
 <br><h3>Documentazione</h3>
 La documentazione dettagliata della libreria e' disponibile in formato JavaDoc (<a href='javadoc/index.html'>BayesBox Documentation</a>).
@@ -156,7 +164,7 @@ esatto. In assenza di evidenza, i due algoritmi sono sostanzialmente identici.
 Sono stati messi a confronto i tre algoritmi per verificarne le prestazioni su varie tipologie di reti.
 Utilizzando una rete <b>polytree</b> si e' visto come l'algoritmo di Enumerazione riesca a dare risultati esatti in tempo competitivo rispetto agli algoritmi di inferenza approssimata che sono stati eseguiti usando 1000 campioni:<br>
 <img src='images/test3.png'>
-<br><br><br>Considerando invece delle reti di tipo <b>3SAT</b>, l'algoritmo di Enumerazione risente della struttura connessa della rete mentre i metodi 
+<br><br><br>Considerando invece delle reti di tipo <b>3SAT</b>, si e' visto che l'algoritmo di Enumerazione risente della struttura connessa della rete mentre i metodi 
 stocastici non sembrano accusare l'incremento di complessita'. Ad ogni modo, essendo eseguiti sempre con un insieme di 1000 campioni, gli algoritmi 
 approssimati commettono un errore maggiore, che puo' essere attenuato aumentando il numero di campioni:<br><br>
 <img src='images/test1.png'>
@@ -165,8 +173,11 @@ una scala logaritmica per rappresentare i risultati. NB: l'enumerazione ha impie
 <img src='images/test2.png'>
 <br><br>Sono stati fatti dei test anche su reti di dimensioni maggiori (3SAT con 55 nodi), dove l'algoritmo di Enumerazione non e' riuscito a portare 
 a termine il calcolo nemmeno dopo 7 ore di computazione. Gli algoritmi di inferenza stocastica invece permettono di arrivare sempre ad un risultato in un tempo accettabile e con una precisione modulabile tramite il numero di campioni utilizzati.
-
-<br><br><h2>Consuntivo </h2>
+<br><br><h2>Conclusioni </h2>
+Lo sviluppo del progetto ha gettato le basi per la realizzazione di una buona libreria per l'utilizzo pratico delle reti di Bayes.
+Pertanto si auspica che la libreria verra' utilizzata a breve anche in altri progetti, sia personali che didattici. 
+Possibili sviluppi futuri potrebbero includere l'implementazione dell'algoritmo di <b>Eliminazione di variabile</b> e dei metodi <b>Monte Carlo</b>.
+<br><br><h3>Consuntivo </h3>
 <table border=1>
 <tr><th>Attivita'</th><th>Ore</th></tr>
 <tr><td>Raccolta informazioni</td><td align='right'>4</td>
@@ -175,7 +186,7 @@ a termine il calcolo nemmeno dopo 7 ore di computazione. Gli algoritmi di infere
 <tr><td>Verifica e testing</td><td align='right'>7</td>
 <tr><td align='right'><b>totale</b></td><td align='right'><b>34</b></td></tr></table>
 
-<br><h2>Riferimenti </h2>
+<br><h3>Riferimenti </h3>
 
 <ul><li><a href='http://code.google.com/p/aima-java/'>AIMA Code</a> Java implementation of algorithms from Norvig And Russell's "Artificial Intelligence - A Modern Approach 3rd Edition."</li>
 <li>Lucidi del corso di Intelligenza Artificiale, <a href='http://www.math.unipd.it/~sperduti/AI11/incertezza.pdf'>gestione dell'Incertezza</a></li>
