@@ -4,7 +4,7 @@ BayesBox is a pure Java library the allows you to create/import/manipulate and e
 
 Methods
 --
-Computations can be made with both exact (__Enumeration__) and statistically-simulated methods (__Likelihood weighting__, __Rejection sampling__)
+Computations can be made with both exact ( __Enumeration__ ) and statistically-simulated methods ( __Likelihood weighting__ , __Rejection sampling__ )
 
 Network creation
 --
