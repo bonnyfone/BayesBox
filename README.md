@@ -4,10 +4,13 @@ BayesBox is a pure Java library the allows you to create/import/manipulate and e
 
 Methods
 --
-Computations can be made with both exact (**Enumeration**) and statistically-simulated methods (**Likelihood weighting**, **Rejection sampling**)
+Computations can be made with both exact (__Enumeration__) and statistically-simulated methods (__Likelihood weighting__, __Rejection sampling__)
 
 Network creation
 --
+-Using __BayesBuilder__, exporting your net in XML format 
+(freely available at http://www.snn.ru.nl/nijmegen/index.php?option=com_content&view=article&id=89&Itemid=212) 
+
 -Via code:
 <pre><code>//...
 BayesNetNode root1 = new BayesNetNode("event 1");
@@ -25,8 +28,6 @@ child.setProbability(0.6, false,false);
 BayesNet bn = new BayesNet(root1,root2);
 //...
 </code></pre>
--Using **BayesBuilder**, exporting your net in XML format 
-(freely available at http://www.snn.ru.nl/nijmegen/index.php?option=com_content&view=article&id=89&Itemid=212) 
 
 Usage example:
 --
